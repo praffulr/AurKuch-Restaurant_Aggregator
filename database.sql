@@ -10,8 +10,8 @@ create table restaurants (restaurant_id int,
 create table rest_dish_links(link_id int, rest_id int, dish_id int);
 create table rest_cuisine_links(link_id int, rest_id int, cuisine_id int);
 
-copy locations from '/home/prafful/sem6/DBMS/Project/location.csv' with (FORMAT csv, HEADER);
-copy dishes from '/home/prafful/sem6/DBMS/Project/dishes.csv' with (FORMAT csv, HEADER);
-copy restaurants from '/home/prafful/sem6/DBMS/Project/restaurant.csv' with (FORMAT csv, HEADER);
-copy rest_dish_links from '/home/prafful/sem6/DBMS/Project/restaurant_dish_links.csv' with (FORMAT csv, HEADER);
-copy rest_cuisine_links from '/home/prafful/sem6/DBMS/Project/restaurant_cuisine_links.csv' with (FORMAT csv, HEADER);
+copy locations from '/home/lalithsrinivas/DBMS/Project/location.csv' with (FORMAT csv, HEADER);
+copy dishes from '/home/lalithsrinivas/DBMS/Project/dishes.csv' with (FORMAT csv, HEADER);
+copy restaurants from '/home/lalithsrinivas/DBMS/Project/restaurant.csv' with (FORMAT csv, HEADER);
+copy rest_dish_links from '/home/lalithsrinivas/DBMS/Project/restaurant_dish_links.csv' with (FORMAT csv, HEADER);
+copy rest_cuisine_links from '/home/lalithsrinivas/DBMS/Project/restaurant_cuisine_links.csv' with (FORMAT csv, HEADER);

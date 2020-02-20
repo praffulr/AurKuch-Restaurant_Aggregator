@@ -8,7 +8,7 @@ Created on Tue Feb 18 16:32:02 2020
 
 import pandas as pd
 
-original_file = pd.read_csv('zomato.csv', index_col=False)
+original_file = pd.read_csv('../zomato.csv', index_col=False)
 all_columns = original_file.columns
 
 loc_table = pd.DataFrame()
@@ -106,15 +106,22 @@ for i in all_columns:
 
 loc_table = loc_table.drop_duplicates(ignore_index = True)
 restaurant_table = restaurant_table.drop_duplicates(ignore_index = True)
+length = len(restaurant_table)
+for i in range(length):
+    try:
+        if float(restaurant_table['rate'][i]) < 0:
+            restaurant_table['rate'][i] = '0'
+    except:
+        restaurant_table['rate'][i] = '0'
 cuisines_table = cuisines_table.drop_duplicates(ignore_index = True)
 dishes_table = dishes_table.drop_duplicates(ignore_index = True)
 rest_cuisine_links = rest_cuisine_links.drop_duplicates(ignore_index = True)
 rest_dish_links = rest_dish_links.drop_duplicates(ignore_index = True)
 
 
-loc_table.to_csv('location.csv', index_label='location_id')
-restaurant_table.to_csv('restaurant.csv', index_label='restaurant_id')
-cuisines_table.to_csv('cuisines.csv', index_label = 'cuisine_id')
-dishes_table.to_csv('dishes.csv', index_label='dish_id')
-rest_cuisine_links.to_csv('restaurant_cuisine_links.csv', index_label = 'link_id')
-rest_dish_links.to_csv('restaurant_dish_links.csv', index_label = 'link_id')
+loc_table.to_csv('../location.csv', index_label='location_id')
+restaurant_table.to_csv('../restaurant.csv', index_label='restaurant_id')
+cuisines_table.to_csv('../cuisines.csv', index_label = 'cuisine_id')
+dishes_table.to_csv('../dishes.csv', index_label='dish_id')
+rest_cuisine_links.to_csv('../restaurant_cuisine_links.csv', index_label = 'link_id')
+rest_dish_links.to_csv('../restaurant_dish_links.csv', index_label = 'link_id')
