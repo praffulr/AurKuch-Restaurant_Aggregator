@@ -10,7 +10,7 @@ import pandas as pd
 
 original_file = pd.read_csv('../zomato.csv', index_col=False)
 all_columns = original_file.columns
-
+rest_dict = {}
 loc_table = pd.DataFrame()
 loc_columns = ['location', 'listed_in(city)']
 
@@ -65,51 +65,58 @@ for i in all_columns:
     elif i in cuisines_col:
         iter = 0
         for j in original_file[i]:
-            if not pd.isna(j):
-                temp = j.split(', ')
-                for k in temp:
-                    try:
-                        index = cuisines_list.index(k)
-                        rest_id_link2.append(iter)
-                        cuisine_id_link2.append(index)
-                    except:
-                        cuisines_list.append(k)
-                        rest_id_link2.append(iter)
-                        cuisine_id_link2.append(len(cuisines_list) - 1)
+            if rest_dict.get(original_file['name'][iter]+original_file['address'][iter]) == None:
+                if not pd.isna(j):
+                    temp = j.split(', ')
+                    for k in temp:
+                        try:
+                            index = cuisines_list.index(k)
+                            rest_id_link2.append(iter)
+                            cuisine_id_link2.append(index)
+                        except:
+                            cuisines_list.append(k)
+                            rest_id_link2.append(iter)
+                            cuisine_id_link2.append(len(cuisines_list) - 1)
+                rest_dict[original_file['name'][iter]+original_file['address'][iter]] = 1
             iter = iter + 1
+                
 
         cuisines_table[i] = cuisines_list
         rest_cuisine_links['restaurant_id'] = rest_id_link2
         rest_cuisine_links['cuisine_id'] = cuisine_id_link2
+        rest_dict = {}
     elif i in dishes_col:
         iter=0
         for j in original_file[i]:
-            if not pd.isna(j):
-                temp = j.split(', ')
-                for k in temp:
-                    try:
-                        index = dishes_list.index(k)
-                        rest_id_link1.append(iter)
-                        dish_id_link1.append(index)
-                    except:
-                        dishes_list.append(k)
-                        rest_id_link1.append(iter)
-                        dish_id_link1.append(len(dishes_list) - 1)
+            if rest_dict.get(original_file['name'][iter]+original_file['address'][iter]) == None:
+                if not pd.isna(j):
+                    temp = j.split(', ')
+                    for k in temp:
+                        try:
+                            index = dishes_list.index(k)
+                            rest_id_link1.append(iter)
+                            dish_id_link1.append(index)
+                        except:
+                            dishes_list.append(k)
+                            rest_id_link1.append(iter)
+                            dish_id_link1.append(len(dishes_list) - 1)
+                rest_dict[original_file['name'][iter]+original_file['address'][iter]] = 1
             iter = iter + 1
 
         dishes_table['dish'] = dishes_list
         rest_dish_links['restaurant_id'] = rest_id_link1
         rest_dish_links['dish_id'] = dish_id_link1
+        rest_dict = {}
 # loc_table = loc_table.drop_duplicates()
 # restaurant_table = restaurant_table.drop_duplicates()
 # dishes_table = dishes_table.drop_duplicates()
 
 loc_table = loc_table.drop_duplicates(ignore_index = True)
-restaurant_table = restaurant_table.drop_duplicates(subset=['address', 'name'], ignore_index = True)
-cuisines_table = cuisines_table.drop_duplicates(ignore_index = True)
-dishes_table = dishes_table.drop_duplicates(ignore_index = True)
-rest_cuisine_links = rest_cuisine_links.drop_duplicates(ignore_index = True)
-rest_dish_links = rest_dish_links.drop_duplicates(ignore_index = True)
+restaurant_table = restaurant_table.drop_duplicates(subset=['address', 'name'])
+cuisines_table = cuisines_table.drop_duplicates()
+dishes_table = dishes_table.drop_duplicates()
+rest_cuisine_links = rest_cuisine_links.drop_duplicates()
+rest_dish_links = rest_dish_links.drop_duplicates()
 
 
 loc_table.to_csv('../location.csv', index_label='location_id')
