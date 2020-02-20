@@ -106,12 +106,6 @@ for i in all_columns:
 
 loc_table = loc_table.drop_duplicates(ignore_index = True)
 restaurant_table = restaurant_table.drop_duplicates(subset=['address', 'name'], ignore_index = True)
-length = len(restaurant_table)
-for i in range(length):
-    try:
-        float(restaurant_table['rate'][i])
-    except:
-        print(i, restaurant_table['rate'][i])
 cuisines_table = cuisines_table.drop_duplicates(ignore_index = True)
 dishes_table = dishes_table.drop_duplicates(ignore_index = True)
 rest_cuisine_links = rest_cuisine_links.drop_duplicates(ignore_index = True)
