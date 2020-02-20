@@ -51,11 +51,11 @@ for i in all_columns:
 
     elif i == 'rate':
         for j in original_file[i]:
-            if not (pd.isna(j) or j == 'NEW'):
+            if not (pd.isna(j) or j == 'NEW' or j=='-'):
                 temp = j.split('/')
                 rate_list.append(temp[0])
             else:
-                rate_list.append(-1)
+                rate_list.append('-1')
         restaurant_table[i] = rate_list
 
     elif i in loc_columns:
@@ -105,14 +105,13 @@ for i in all_columns:
 # dishes_table = dishes_table.drop_duplicates()
 
 loc_table = loc_table.drop_duplicates(ignore_index = True)
-restaurant_table = restaurant_table.drop_duplicates(ignore_index = True)
+restaurant_table = restaurant_table.drop_duplicates(subset=['address', 'name'], ignore_index = True)
 length = len(restaurant_table)
 for i in range(length):
     try:
-        if float(restaurant_table['rate'][i]) < 0:
-            restaurant_table['rate'][i] = '0'
+        float(restaurant_table['rate'][i])
     except:
-        restaurant_table['rate'][i] = '0'
+        print(i, restaurant_table['rate'][i])
 cuisines_table = cuisines_table.drop_duplicates(ignore_index = True)
 dishes_table = dishes_table.drop_duplicates(ignore_index = True)
 rest_cuisine_links = rest_cuisine_links.drop_duplicates(ignore_index = True)
