@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue Feb 18 16:32:02 2020
-
 @author: lalithsrinivas
 """
 
 import pandas as pd
 
-original_file = pd.read_csv('../zomato.csv', index_col=False)
+original_file = pd.read_csv('zomato.csv', index_col=False)
 all_columns = original_file.columns
 rest_dict = {}
 loc_table = pd.DataFrame()
@@ -57,7 +56,9 @@ for i in all_columns:
             else:
                 rate_list.append('-1')
         restaurant_table[i] = rate_list
-
+    elif i == 'location':
+        restaurant_table[i] = original_file[i]
+        loc_table[i] = original_file[i]
     elif i in loc_columns:
         loc_table[i] = original_file[i]
     elif i in restaurant_col:
@@ -79,7 +80,7 @@ for i in all_columns:
                             cuisine_id_link2.append(len(cuisines_list) - 1)
                 rest_dict[original_file['name'][iter]+original_file['address'][iter]] = 1
             iter = iter + 1
-                
+
 
         cuisines_table[i] = cuisines_list
         rest_cuisine_links['restaurant_id'] = rest_id_link2
@@ -119,9 +120,9 @@ rest_cuisine_links = rest_cuisine_links.drop_duplicates()
 rest_dish_links = rest_dish_links.drop_duplicates()
 
 
-loc_table.to_csv('../location.csv', index_label='location_id')
-restaurant_table.to_csv('../restaurant.csv', index_label='restaurant_id')
-cuisines_table.to_csv('../cuisines.csv', index_label = 'cuisine_id')
-dishes_table.to_csv('../dishes.csv', index_label='dish_id')
-rest_cuisine_links.to_csv('../restaurant_cuisine_links.csv', index_label = 'link_id')
-rest_dish_links.to_csv('../restaurant_dish_links.csv', index_label = 'link_id')
+loc_table.to_csv('location.csv', index_label='location_id')
+restaurant_table.to_csv('restaurant.csv', index_label='restaurant_id')
+cuisines_table.to_csv('cuisines.csv', index_label = 'cuisine_id')
+dishes_table.to_csv('dishes.csv', index_label='dish_id')
+rest_cuisine_links.to_csv('restaurant_cuisine_links.csv', index_label = 'link_id')
+rest_dish_links.to_csv('restaurant_dish_links.csv', index_label = 'link_id')
