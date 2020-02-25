@@ -6,6 +6,7 @@ Created on Tue Feb 18 16:32:02 2020
 """
 
 import pandas as pd
+import datetime as dt
 
 original_file = pd.read_csv('./database/zomato.csv', index_col=False)
 all_columns = original_file.columns
@@ -37,6 +38,7 @@ cuisine_id_link2 = []
 
 user_loc_dict = {}
 
+
 for i in all_columns:
     if i == 'approx_cost(for two people)':
         cost_col = []
@@ -60,6 +62,10 @@ for i in all_columns:
                 rate_list.append('-1')
         restaurant_table[i] = rate_list
     elif i == 'location':
+        len_locs = len(original_file[i])
+        for j in range (0,len_locs):
+            if pd.isnull(original_file[i][j]):
+                original_file[i][j] = "-"
         restaurant_table[i] = original_file[i]
         loc_table[i] = original_file[i]
     elif i in loc_columns:
@@ -115,6 +121,7 @@ for i in all_columns:
         rest_dish_links['dish_id'] = dish_id_link1
         rest_dict = {}
 
+dish_links_num = (len(dish_id_link1))
 
 users_file = pd.read_csv('./database/MOCKDATA.csv', index_col=False)
 users_columns = users_file.columns
@@ -122,14 +129,28 @@ users_table = pd.DataFrame()
 
 user_loc_list = list(user_loc_dict)
 for i in users_columns:
-    if i == 'location':
+    if i== 'id':
+        continue
+    elif i == 'location':
+        len_user_loc = len(user_loc_list)
+        print(len_user_loc)
         city_list = []
         for j in users_file[i]:
-            city_list.append(user_loc_list[j%(len(user_loc_list))])
+            city_list.append(user_loc_list[j%(len_user_loc)])
         users_table[i] = city_list
     else:
         users_table[i] = users_file[i]
+users_table['reg_time'] = [dt.datetime.now()]*len(users_table);
 
+print(dish_links_num)
+dish_links_price_list = []
+test_file = pd.read_csv('./database/train.csv')
+for i in test_file.columns:
+    if i == 'checkout_price':
+        len_prices = len(test_file[i])
+        for iter in range (0, dish_links_num):
+            dish_links_price_list.append(test_file[i][iter%len_prices])
+        rest_dish_links[i] = dish_links_price_list
 
 
 loc_table = loc_table.drop_duplicates(ignore_index = True)

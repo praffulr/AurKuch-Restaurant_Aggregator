@@ -36,14 +36,14 @@ def home():
                   where locations.listed_in_city = current_user_details.location
             )
             SELECT *
-            from restaurants LEFT OUTER JOIN locs
+            from restaurants LEFT INNER JOIN locs
               on restaurants.location = locs.location
             ORDER BY restaurants.votes desc
             LIMIT 25
         """
         )
         rows = cur.fetchall()
-        return render_template("base.html", rows = rows)
+        return render_template("homepage.html", rows = rows, username = username)
 
 @app.route("/register")
 def register():
