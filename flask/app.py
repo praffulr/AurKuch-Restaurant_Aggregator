@@ -1,7 +1,8 @@
 from flask import Flask, render_template, redirect, request
 import psycopg2
+import datetime as dt
 # Connect to the database
-db = 'host=127.0.0.1  dbname=project user=prafful password=pandu'
+db = 'host=127.0.0.1  dbname=project user=admin password=admin'
 conn = psycopg2.connect(db)
 cur = conn.cursor()
 
@@ -35,19 +36,41 @@ def home():
                 from locations, current_user_details
                   where locations.listed_in_city = current_user_details.location
             )
-            SELECT *
-            from restaurants LEFT INNER JOIN locs
+            SELECT name
+            from restaurants INNER JOIN locs
               on restaurants.location = locs.location
             ORDER BY restaurants.votes desc
             LIMIT 25
         """
         )
         rows = cur.fetchall()
-        return render_template("homepage.html", rows = rows, username = username)
+        return render_template("base.html", rows = rows)
 
-@app.route("/register")
+@app.route("/register", methods=['GET', 'POST'])
 def register():
-    return render_template("register.html")
+    if request.method == 'POST':
+        firstname = request.form['firstname']
+        lastame = request.form['lastname']
+        emailid = request.form['emailid']
+        gender = request.form['gender']
+        location = request.form['location']
+        password = request.form['password']
+        username = request.form['username']
+        phonenum = request.form['phonenum']
+        # print(type(request.form['dob']))
+        dob = dt.datetime.strptime(request.form['dob'], "%Y-%m-%d")
+        cur.execute(
+            """
+            INSERT INTO users(first_name, last_name, email_id, gender, location, password, username, ph_no, dob)
+            VALUES
+                (\'{}\', \'{}\', \'{}\', \'{}\', \'{}\', \'{}\', \'{}\', \'{}\', \'{}\');
+            """.format(firstname, lastame, emailid, gender, location, password, username, phonenum, dob)
+            )
+        conn.commit()
+        return render_template('users.html')
+    else:
+        return render_template('register.html')
+
 
 @app.route("/locations", methods=['GET', 'POST'])
 def locations():
