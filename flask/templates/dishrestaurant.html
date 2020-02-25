@@ -1,0 +1,40 @@
+ <head>
+     <style>
+         .topright {
+              position: absolute;
+              top: 8px;
+              right: 16px;
+              font-size: 18px;
+            }
+     </style>
+ </head>
+ <a href="/"><div class="topright"> Logout </div> </a>
+<div class="container">
+            <table class="mt-5 table table-bordered">
+                <thead>
+                    <tr>
+                        <th scope="col">name</th> 
+                        <th scope="col">price</th>
+                        <th scope="col"></th><!--
+                        <th scope="col">date</th> -->
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                    <tr>
+                        <form action="/cart" method="POST">
+                        <td scope="row"><input type="submit" id="{{row[0]}}" name="dishname" value="{{row[0]}}"></input></td>
+                        <td scope="row"><input type="submit" id="{{row[1]}}" name="dishid" value="{{row[1]}}"></td>
+                        <td scope="row"><Button>Add To Cart</Button></td>
+                        </form>
+                        <!--
+                        <td scope="row">{{row[3]}}</td> -->
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <!-- <form action="/locations" method="POST">
+                <input type="text" name="Loc_Id" id="loc_id">
+            Start
+            </form> -->
+        </div>

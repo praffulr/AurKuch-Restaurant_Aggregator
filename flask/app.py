@@ -1,6 +1,9 @@
 from flask import Flask, render_template, redirect, request
 import psycopg2
 import datetime as dt
+# import sys
+# reload(sys)
+# sys.setdefaultencoding('UTF8')
 # Connect to the database
 db = 'host=127.0.0.1  dbname=project user=admin password=admin'
 conn = psycopg2.connect(db)
@@ -13,8 +16,15 @@ app = Flask(__name__)
 def root():
     # cur.execute("""SELECT name FROM restaurantsORDER BY random()LIMIT 25""")
     # rows = cur.fetchall()
-
-    return render_template("users.html")
+    try:
+        cur.execute(
+            """
+                DROP VIEW current_user_details;
+            """
+            )
+    except:
+        pass
+    return render_template("users.html", message="")
 
 @app.route("/homepage", methods = ['POST'])
 def home():
@@ -22,54 +32,67 @@ def home():
         username = request.form.get("Username")
         password = request.form.get("Password")
         cur.execute(
-        """
-            CREATE VIEW current_user_details as
-            select * from users
-            where users.username = \'{}\' and users.password = \'{}\'
-        """.format(username, password)
-        )
-        cur.execute(
-        """
-            WITH locs as
-            (
-                select distinct(locations.location) as location
-                from locations, current_user_details
-                  where locations.listed_in_city = current_user_details.location
+            """
+                SELECT * FROM users
+                WHERE username=\'{}\' AND password=\'{}\'
+            """.format(username, password)
             )
-            SELECT name
-            from restaurants INNER JOIN locs
-              on restaurants.location = locs.location
-            ORDER BY restaurants.votes desc
-            LIMIT 25
-        """
-        )
-        rows = cur.fetchall()
-        return render_template("base.html", rows = rows)
+        if len(cur.fetchall()) > 0:
+            cur.execute(
+            """
+                CREATE VIEW current_user_details as
+                select * from users
+                where users.username = \'{}\' and users.password = \'{}\'
+            """.format(username, password)
+            )
+            cur.execute(
+            """
+                WITH locs as
+                (
+                    select distinct(locations.location) as location
+                    from locations, current_user_details
+                      where locations.listed_in_city = current_user_details.location
+                )
+                SELECT name
+                from restaurants INNER JOIN locs
+                  on restaurants.location = locs.location
+                ORDER BY restaurants.votes desc
+                LIMIT 25
+            """
+            )
+            conn.commit()
+            rows = cur.fetchall()
+            return render_template("base.html", rows = rows)
+        return render_template("users.html", message="Invalid Username or Password")
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        firstname = request.form['firstname']
-        lastame = request.form['lastname']
-        emailid = request.form['emailid']
-        gender = request.form['gender']
-        location = request.form['location']
-        password = request.form['password']
-        username = request.form['username']
-        phonenum = request.form['phonenum']
-        # print(type(request.form['dob']))
-        dob = dt.datetime.strptime(request.form['dob'], "%Y-%m-%d")
-        cur.execute(
-            """
-            INSERT INTO users(first_name, last_name, email_id, gender, location, password, username, ph_no, dob)
-            VALUES
-                (\'{}\', \'{}\', \'{}\', \'{}\', \'{}\', \'{}\', \'{}\', \'{}\', \'{}\');
-            """.format(firstname, lastame, emailid, gender, location, password, username, phonenum, dob)
-            )
-        conn.commit()
-        return render_template('users.html')
+        try:
+            firstname = request.form['firstname']
+            lastame = request.form['lastname']
+            emailid = request.form['emailid']
+            gender = request.form['gender']
+            location = request.form['location']
+            password = request.form['password']
+            username = request.form['username']
+            phonenum = request.form['phonenum']
+            # print(type(request.form['dob']))
+            dob = dt.datetime.strptime(request.form['dob'], "%Y-%m-%d")
+            time = dt.datetime.now()
+            cur.execute(
+                """
+                INSERT INTO users(first_name, last_name, email_id, gender, location, password, username, ph_no, dob, reg_time)
+                VALUES
+                    (\'{}\', \'{}\', \'{}\', \'{}\', \'{}\', \'{}\', \'{}\', \'{}\', \'{}\', \'{}\');
+                """.format(firstname, lastame, emailid, gender, location, password, username, phonenum, dob, time)
+                )
+            conn.commit()
+            return render_template('users.html')
+        except:
+            return render_template('register.html', message="Username might be taken (or) Invalid Credentials entered")
     else:
-        return render_template('register.html')
+        return render_template('register.html', message="", )
 
 
 @app.route("/locations", methods=['GET', 'POST'])
@@ -79,15 +102,13 @@ def locations():
         #city = request.form.get('City')
         cur.execute(
         """
-            SELECT *  FROM RESTAURANTS
+            SELECT name  FROM RESTAURANTS
             where location = \'{}\'
-            LIMIT 25
         """.format(loc)
         )
         rows = cur.fetchall()
         # return format(loc)
-        return render_template("base.html", rows=rows)
-
+        return render_template("locationsearch.html", rows=rows)
 
 @app.route("/restaurants", methods=['GET', 'POST'])
 def rests():
@@ -104,6 +125,43 @@ def rests():
         # return format(loc)
         return render_template("base.html", rows=rows)
 
+@app.route("/dishrestaurant",methods=['GET', 'POST'])
+def dishrestaurant():
+    if request.method == 'POST':
+        searchdish=request.form.get("rest")
+        cur.execute(
+        """
+            select dish_liked,price 
+            from dishes, restaurants,rest_dish_links 
+            where rest_id=restaurant_id and dishes.dish_id=rest_dish_links.link_id 
+            and name=\'{}\'
+        """.format(searchdish)
+           )
+        rows = cur.fetchall()
+        return render_template("dishrestaurant.html",rows=rows)
+
+@app.route("/cart",methods=['GET', 'POST'])
+def cart():
+    if request.method == 'POST':
+        dishname=request.form.get("dishname")
+        dishid=request.form.get("dishid")
+        cur.execute(
+        """
+            CREATE TEMP TABLE temp_table AS 
+            WITH t (dishname, dishprice) AS ( 
+            VALUES 
+            (\'{}\'::text,\'{}\'::text)
+            ) 
+            SELECT * FROM t
+        """.format(dishname,dishid)
+        )
+        cur.execute(
+        """
+            select * from temp_table
+        """
+        )
+        rows = cur.fetchall()
+    return render_template("cart.html",rows=rows)
 # @app.route("/restaurants", methods=['GET', 'POST'])
 # def restaurantSearch():
 #     if request.method == 'POST':
