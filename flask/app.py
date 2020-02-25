@@ -73,7 +73,7 @@ def rests():
         cur.execute(
         """
             SELECT *  FROM restaurants
-            where restaurant.name =\'{}\'
+            where restaurants.name =\'{}\'
             LIMIT 25
         """.format(rest)
         )
