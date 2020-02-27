@@ -36,20 +36,23 @@ create table orders (order_time timestamp, username text, item_id integer, count
     GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA PUBLIC TO admin;
   ---------------------------------------------------------------------
 
--- CREATE OR REPLACE FUNCTION change_loc() RETURNS TRIGGER AS
--- $$
---   UPDATE users
---   SET users.location = NEW.location
---   where users.location = OLD.location;
--- $$ language SQL;
---
--- CREATE TRIGGER update_location
---   AFTER UPDATE ON active_users
---   FOR EACH ROW
---   EXECUTE PROCEDURE change_loc();
--- CREATE FUNCTION cond_loc_in_locs(location text, locations) RETURNS BOOLEAN AS $$
---   SELECT ( $1 IN ($2.listed_in_city) );
--- $$ LANGUAGE SQL;
+CREATE OR REPLACE FUNCTION change_loc() RETURNS TRIGGER AS
+$$
+  BEGIN
+    UPDATE users
+    SET users.location = NEW.location
+    where users.location = OLD.location;
+    RETURN NULL;
+  END;
+$$ language plpgsql;
+
+CREATE TRIGGER update_location
+  AFTER UPDATE ON active_users
+  FOR EACH ROW
+  EXECUTE PROCEDURE change_loc();
+CREATE FUNCTION cond_loc_in_locs(location text, locations) RETURNS BOOLEAN AS $$
+  SELECT ( $1 IN ($2.listed_in_city) );
+$$ LANGUAGE SQL;
 --
 -- CREATE FUNCTION loc_in_locs() RETURNS TRIGGER AS $$
 -- BEGIN
@@ -274,4 +277,11 @@ $$
 $$ language plpgsql;
 
 --updating user's location
--- CREATE OR REPLACE FUNCTION update_user_loc(username text, )
+CREATE OR REPLACE FUNCTION update_user_loc(username text, new_loc text) RETURNS VOID AS
+$$
+  BEGIN
+    UPDATE active_users
+    SET active_users.location = new_loc
+    WHERE active_users.username = username;
+  END;
+$$ language plpgsql;
