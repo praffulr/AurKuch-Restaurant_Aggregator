@@ -1,4 +1,5 @@
-from flask import Flask, render_template, redirect, request
+from flask import Flask, render_template, redirect, request, session
+# from flask.session import Session
 import psycopg2
 import datetime as dt
 # import sys
@@ -10,39 +11,41 @@ conn = psycopg2.connect(db)
 cur = conn.cursor()
 
 app = Flask(__name__)
-
-
+app.secret_key = "abc"
 @app.route("/")
 def root():
-    # cur.execute("""SELECT name FROM restaurantsORDER BY random()LIMIT 25""")
-    # rows = cur.fetchall()
-    try:
-        cur.execute(
-            """
-                DROP VIEW current_user_details;
-            """
-            )
-    except:
-        pass
-    return render_template("users.html", message="")
+    if session.get('username') != None:
+        return render_template("base.html")
+    else:
+        return render_template("users.html", message="")
 
-@app.route("/homepage", methods = ['POST'])
+@app.route("/homepage", methods = ['POST', 'GET'])
 def home():
     if request.method == 'POST':
+        # try:
+        #     cur.execute(
+        #         """
+        #             DROP VIEW current_user_details;
+        #         """
+        #         )
+        # except:
+        #     pass
+        # conn.commit()
         username = request.form.get("Username")
         password = request.form.get("Password")
         cur.execute(
             """
                 SELECT * FROM users
-                WHERE username=\'{}\' AND password=\'{}\'
+                WHERE username=\'{}\' AND password=\'{}\';
             """.format(username, password)
             )
         if len(cur.fetchall()) > 0:
+            session['username'] = username
             cur.execute(
             """
                 CREATE VIEW current_user_details as
                 select * from users
-                where users.username = \'{}\' and users.password = \'{}\'
+                where users.username = \'{}\' and users.password = \'{}\';
             """.format(username, password)
             )
             cur.execute(
@@ -57,13 +60,34 @@ def home():
                 from restaurants INNER JOIN locs
                   on restaurants.location = locs.location
                 ORDER BY restaurants.votes desc
-                LIMIT 25
+                LIMIT 25;
             """
             )
             conn.commit()
             rows = cur.fetchall()
             return render_template("base.html", rows = rows)
         return render_template("users.html", message="Invalid Username or Password")
+    else:
+        try:
+            cur.execute(
+                """
+                    WITH locs as
+                    (
+                        select distinct(locations.location) as location
+                        from locations, current_user_details
+                          where locations.listed_in_city = current_user_details.location
+                    )
+                    SELECT name
+                    from restaurants INNER JOIN locs
+                      on restaurants.location = locs.location
+                    ORDER BY restaurants.votes desc
+                    LIMIT 25;
+                """
+                )
+            rows = cur.fetchall()
+            return render_template("base.html", rows=rows)
+        except :
+            return render_template("users.html", message="")
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
@@ -94,6 +118,21 @@ def register():
     else:
         return render_template('register.html', message="", )
 
+@app.route("/userpage")
+def userpage():
+    cur.execute(
+        """
+            select username, first_name, last_name, email_id, gender, location, ph_no, dob from current_user_details;
+        """
+        )
+    rows = cur.fetchall()
+    rows = list(rows)
+    rows[0] = list(rows[0])
+    rows[0][-1] = rows[0][-1].strftime("%d-%m-%Y")
+    rows[0] = tuple(rows[0])
+    rows = tuple(rows)
+    return render_template("userPage.html", message=rows)
+    
 
 @app.route("/locations", methods=['GET', 'POST'])
 def locations():

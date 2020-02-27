@@ -1,51 +1,81 @@
- <head>
-     <style>
-         .topright {
-              position: absolute;
-              top: 8px;
-              right: 16px;
-              font-size: 18px;
-            }
-     </style>
- </head>
- <a href="/"><div class="topright"> Logout </div> </a>
- <div class="container">
-            <h1 class="mt-5 ">Pomodoro</h1>
 
+<!DOCTYPE html>
+<html>
 
-            <table class="mt-5 table table-bordered">
-                <thead>
-                    <tr>
-                        <th scope="col">id</th>
-                        <th scope="col">name</th>
-                        <th scope="col">userID</th>
-                        <th scope="col">date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in rows %}
-                    <tr>
-                        <td scope="row">{{row[0]}}</td>
-                        <td scope="row">{{row[1]}}</td>
-                        <td scope="row">{{row[2]}}</td>
-                        <td scope="row">{{row[3]}}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            <form action="/locations" method="POST">
-                <label for = "Loc_Id">Location  :</label>
-                <input type="text" name="loc_Id" id="loc_id">
-                <input type="submit" value="Search">
-            <!-- <a href="/locations"><button>Start</button></a> -->
-            </form>
+<head>
+    <style>
+        ul {
+          list-style-type: none;
+          margin: 0;
+          padding: 0;
+          overflow: hidden;
+          background-color: #333;
+        }
 
-            <form action="/restaurants" method="POST">
-              <label for="restaurant">Restaurant:</label>
-                <input type="text" name="restaurant" id="restaurant">
-                <input type="submit" value = "Search">
-            <!-- <a href="/restaurants"><button>Start</button></a> -->
-            </form>
+        li {
+          float: left;
+        }
 
-<!-- </body> -->
-</div>
+        li a {
+          display: block;
+          color: white;
+          text-align: center;
+          padding: 14px 16px;
+          text-decoration: none;
+        }
+
+        li a:hover:not(.active) {
+          background-color: #111;
+        }
+
+        .active {
+          background-color: #4CAF50;
+        }
+    </style>
+
+</head>
+
+<body>
+    <ul>
+      <li><a href="/homepage">Home</a></li>
+      <li style="float:right"><a class="active" href="/">Logout</a></li>
+      <li style="float:right"><a href="/userpage">User Page</a></li>
+    </ul>
+    <div class="container">
+    <table class="mt-5 table table-bordered">
+        <thead>
+            <tr>
+                <th scope="col">id</th>
+                <th scope="col">name</th>
+                <th scope="col">userID</th>
+                <th scope="col">date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                <td scope="row">{{row[0]}}</td>
+                <td scope="row">{{row[1]}}</td>
+                <td scope="row">{{row[2]}}</td>
+                <td scope="row">{{row[3]}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <form action="/locations" method="POST">
+        <label for = "Loc_Id">Location  :</label>
+        <input type="text" name="loc_Id" id="loc_id">
+        <input type="submit" value="Search">
+    <!-- <a href="/locations"><button>Start</button></a> -->
+    </form>
+
+    <form action="/restaurants" method="POST">
+      <label for="restaurant">Restaurant:</label>
+        <input type="text" name="restaurant" id="restaurant">
+        <input type="submit" value = "Search">
+    <!-- <a href="/restaurants"><button>Start</button></a> -->
+    </form>
+
+    </div>
+</body>
+</html>
