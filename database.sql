@@ -28,12 +28,25 @@ create table users(first_name text, last_name text, email_id text, gender text,l
 create table cart_data(username text, item_id int, count int, PRIMARY KEY(username, item_id),
   CONSTRAINT item_in_list FOREIGN KEY(item_id) REFERENCES rest_dish_links(link_id));
 
-
+create table active_users( first_name text, last_name text, email_id text, gender text,
+  location text, password text,username text, ph_no text, login_time timestamp, PRIMARY KEY (username) ) ;
+create table orders (order_time timestamp, username text, item_id integer, count integer, PRIMARY KEY(username, order_time));
   -----------------REMOVE THIS IN FINAL SUBMISSION---------------------
   create USER admin with password 'admin';
     GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA PUBLIC TO admin;
   ---------------------------------------------------------------------
 
+-- CREATE OR REPLACE FUNCTION change_loc() RETURNS TRIGGER AS
+-- $$
+--   UPDATE users
+--   SET users.location = NEW.location
+--   where users.location = OLD.location;
+-- $$ language SQL;
+--
+-- CREATE TRIGGER update_location
+--   AFTER UPDATE ON active_users
+--   FOR EACH ROW
+--   EXECUTE PROCEDURE change_loc();
 -- CREATE FUNCTION cond_loc_in_locs(location text, locations) RETURNS BOOLEAN AS $$
 --   SELECT ( $1 IN ($2.listed_in_city) );
 -- $$ LANGUAGE SQL;
@@ -259,3 +272,6 @@ $$
     END IF;
   END;
 $$ language plpgsql;
+
+--updating user's location
+-- CREATE OR REPLACE FUNCTION update_user_loc(username text, )
