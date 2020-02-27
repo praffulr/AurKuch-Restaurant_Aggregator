@@ -29,46 +29,35 @@ li a:hover:not(.active) {
 }
 </style>
 </head>
+<body>
+
 <ul>
   <li><a href="/homepage">Home</a></li>
   <li style="float:right"><a class="active" href="/">Logout</a></li>
   <li style="float:right"><a href="/userpage">User Page</a></li>
 </ul>
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-<script type=text/javascript>
-        $(function() {
-          $('a#test').bind('click', function() {
-            $.getJSON('/dishrestaurant',
-                function(data) {
-              //do nothing
-            });
-            return false;
-          });
-        });
-</script>
 <div class="container">
             <table class="mt-5 table table-bordered">
                 <thead>
                     <tr>
-                        <th scope="col">name</th> <!--
-                        <th scope="col">price</th>
-                        <th scope="col">userID</th>
-                        <th scope="col">date</th> -->
+                        <th scope="col">Name</th>
+                        <th scope="col">Address</th>
+                        <th scope="col">Ratings</th>
+                        <th scope="col">Approx Cost</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for row in rows %}
                     <tr>
                         <td scope="row">
-                            <form action="/dishrestaurant" method="POST">
-                                <input type="submit" id="{{row[0]}}" name="rest" value="{{row[0]}}"></input>
+                            <form action="/{{row[0]}}/dishrestaurant" method="POST">
+                                <input type="submit" id="{{row[0]}}" name="rest" value="{{row[0]}}"style="background:none;border:0;color:#000000"></input>
                             </form>
                         </td>
-                         <!--
                         <td scope="row">{{row[1]}}</td>
                         <td scope="row">{{row[2]}}</td>
-                        <td scope="row">{{row[3]}}</td> -->
+                        <td scope="row">{{row[3]}}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

@@ -22,15 +22,15 @@ def root():
 @app.route("/homepage", methods = ['POST', 'GET'])
 def home():
     if request.method == 'POST':
-        # try:
-        #     cur.execute(
-        #         """
-        #             DROP VIEW current_user_details;
-        #         """
-        #         )
-        # except:
-        #     pass
-        # conn.commit()
+        try:
+            cur.execute(
+                """
+                    DROP VIEW current_user_details;
+                """
+                )
+        except:
+            pass
+        conn.commit()
         username = request.form.get("Username")
         password = request.form.get("Password")
         cur.execute(
@@ -164,43 +164,34 @@ def rests():
         # return format(loc)
         return render_template("base.html", rows=rows)
 
-@app.route("/dishrestaurant",methods=['GET', 'POST'])
-def dishrestaurant():
+@app.route("/<name>/dishrestaurant",methods=['GET', 'POST'])
+def dishrestaurant(name):
     if request.method == 'POST':
         searchdish=request.form.get("rest")
         cur.execute(
         """
-            select dish_liked,price 
+            select dish_liked 
             from dishes, restaurants,rest_dish_links 
             where rest_id=restaurant_id and dishes.dish_id=rest_dish_links.link_id 
             and name=\'{}\'
         """.format(searchdish)
            )
         rows = cur.fetchall()
-        return render_template("dishrestaurant.html",rows=rows)
+    return render_template("dishrestaurant.html",rows=rows, rest_name=name)
 
-@app.route("/cart",methods=['GET', 'POST'])
-def cart():
-    if request.method == 'POST':
-        dishname=request.form.get("dishname")
-        dishid=request.form.get("dishid")
-        cur.execute(
-        """
-            CREATE TEMP TABLE temp_table AS 
-            WITH t (dishname, dishprice) AS ( 
-            VALUES 
-            (\'{}\'::text,\'{}\'::text)
-            ) 
-            SELECT * FROM t
-        """.format(dishname,dishid)
-        )
-        cur.execute(
-        """
-            select * from temp_table
-        """
-        )
-        rows = cur.fetchall()
-    return render_template("cart.html",rows=rows)
+@app.route("/<rest_name>/cart",methods=['GET','POST'])
+def cart(rest_name):
+	if request.method == 'POST':
+		result = request.form
+		temp = {}
+		for i in result.keys():
+			if result[i] != '0':
+				temp[i] = result[i]
+#		for i in temp
+#		cur.execute(
+#			"""
+#			""")
+		return render_template("cart.html",result = temp)
 # @app.route("/restaurants", methods=['GET', 'POST'])
 # def restaurantSearch():
 #     if request.method == 'POST':

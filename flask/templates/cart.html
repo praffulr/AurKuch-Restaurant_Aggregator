@@ -1,59 +1,50 @@
+<!doctype html>
+<html>
 <head>
-<style>
-ul {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  background-color: #333;
-}
+      <style>
+      ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background-color: #333;
+      }
 
-li {
-  float: left;
-}
+      li {
+        float: left;
+      }
 
-li a {
-  display: block;
-  color: white;
-  text-align: center;
-  padding: 14px 16px;
-  text-decoration: none;
-}
+      li a {
+        display: block;
+        color: white;
+        text-align: center;
+        padding: 14px 16px;
+        text-decoration: none;
+      }
 
-li a:hover:not(.active) {
-  background-color: #111;
-}
+      li a:hover:not(.active) {
+        background-color: #111;
+      }
 
-.active {
-  background-color: #4CAF50;
-}
-</style>
-</head>
-<div class="container">
-            <table class="mt-5 table table-bordered">
-                <thead>
-                    <tr>
-                        <th scope="col">name</th> 
-                        <th scope="col">price</th><!--
-                        <th scope="col">userID</th>
-                        <th scope="col">date</th> -->
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in rows %}
-                    <tr>
-                        <td scope="row">
-                            {{row[0]}}
-                        </td>
-                        <td scope="row">{{row[1]}}</td>  <!--
-                        <td scope="row">{{row[2]}}</td>
-                        <td scope="row">{{row[3]}}</td> -->
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            <!-- <form action="/locations" method="POST">
-                <input type="text" name="Loc_Id" id="loc_id">
-            Start
-            </form> -->
-        </div>
+      .active {
+        background-color: #4CAF50;
+      }
+      </style>
+      </head>
+      <body>
+
+      <ul>
+        <li><a href="/homepage">Home</a></li>
+        <li style="float:right"><a class="active" href="/">Logout</a></li>
+        <li style="float:right"><a href="/userpage">User Page</a></li>
+      </ul>
+      <table border = 1>
+         {% for key, value in result.items() %}
+            <tr>
+               <th> {{ key }} </th>
+               <td> {{ value }} </td>
+            </tr>
+         {% endfor %}
+      </table>
+   </body>
+</html>
