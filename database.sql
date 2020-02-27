@@ -90,15 +90,15 @@ create table orders (order_time timestamp, username text, item_id integer, count
 
 -- CREATE RULE user_age
 
-copy locations from '/home/prafful/sem6/DBMS/Project/database/location.csv' with (FORMAT csv, HEADER);
+copy locations from '/home/lalithsrinivas/DBMS/Project/location.csv' with (FORMAT csv, HEADER);
 --Inserting from locations into cities
 INSERT INTO cities(city) ( SELECT distinct(listed_in_city) FROM locations );
-copy dishes from '/home/prafful/sem6/DBMS/Project/database/dishes.csv' with (FORMAT csv, HEADER);
-copy restaurants from '/home/prafful/sem6/DBMS/Project/database/restaurant.csv' with (FORMAT csv, HEADER, DELIMITER ',');
-copy rest_dish_links from '/home/prafful/sem6/DBMS/Project/database/restaurant_dish_links.csv' with (FORMAT csv, HEADER);
-copy rest_cuisine_links from '/home/prafful/sem6/DBMS/Project/database/restaurant_cuisine_links.csv' with (FORMAT csv, HEADER);
-copy cuisines from '/home/prafful/sem6/DBMS/Project/database/cuisines.csv' with (FORMAT csv, HEADER);
-copy users from '/home/prafful/sem6/DBMS/Project/database/userdata.csv' with (FORMAT csv, HEADER);
+copy dishes from '/home/lalithsrinivas/DBMS/Project/dishes.csv' with (FORMAT csv, HEADER);
+copy restaurants from '/home/lalithsrinivas/DBMS/Project/restaurant.csv' with (FORMAT csv, HEADER, DELIMITER ',');
+copy rest_dish_links from '/home/lalithsrinivas/DBMS/Project/restaurant_dish_links.csv' with (FORMAT csv, HEADER);
+copy rest_cuisine_links from '/home/lalithsrinivas/DBMS/Project/restaurant_cuisine_links.csv' with (FORMAT csv, HEADER);
+copy cuisines from '/home/lalithsrinivas/DBMS/Project/cuisines.csv' with (FORMAT csv, HEADER);
+copy users from '/home/lalithsrinivas/DBMS/Project/userdata.csv' with (FORMAT csv, HEADER);
 
 
 

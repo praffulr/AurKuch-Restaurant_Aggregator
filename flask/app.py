@@ -22,15 +22,6 @@ def root():
 @app.route("/homepage", methods = ['POST', 'GET'])
 def home():
     if request.method == 'POST':
-        try:
-            cur.execute(
-                """
-                    DROP VIEW current_user_details;
-                """
-                )
-        except:
-            pass
-        conn.commit()
         username = request.form.get("Username")
         password = request.form.get("Password")
         cur.execute(
