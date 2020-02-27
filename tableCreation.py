@@ -8,14 +8,14 @@ Created on Tue Feb 18 16:32:02 2020
 import pandas as pd
 import datetime as dt
 
-original_file = pd.read_csv('../zomato.csv', index_col=False)
+original_file = pd.read_csv('./database/zomato.csv', index_col=False)
 all_columns = original_file.columns
 rest_dict = {}
 loc_table = pd.DataFrame()
 loc_columns = ['location', 'listed_in(city)']
 
 restaurant_table = pd.DataFrame()
-restaurant_col = ['url', 'address', 'name', 'online_order', 'book_table', 'rate', 'votes', 'phone', 'location', 'rest_type', 'approx_cost(for two people)']
+restaurant_col = ['address', 'name', 'online_order', 'book_table', 'rate', 'votes', 'phone', 'location', 'rest_type', 'approx_cost(for two people)']
 rate_list = []
 
 dishes_table = pd.DataFrame()
@@ -26,6 +26,12 @@ cuisines_table = pd.DataFrame()
 cuisines_list = []
 cuisines_col = ['cuisines']
 
+for i in all_columns:
+    if (i in  ['location', 'listed_in(city)', 'name', 'dish_liked', 'cuisines']):
+        l = len(original_file[i])
+        for j in range (0, l):
+            if ( not pd.isnull(original_file[i][j])):
+                original_file[i][j] = original_file[i][j].lower()
 
 rest_dish_links = pd.DataFrame()
 rest_id_link1 = []
@@ -123,7 +129,7 @@ for i in all_columns:
 
 dish_links_num = (len(dish_id_link1))
 
-users_file = pd.read_csv('../MOCKDATA.csv', index_col=False)
+users_file = pd.read_csv('./database/MOCKDATA.csv', index_col=False)
 users_columns = users_file.columns
 users_table = pd.DataFrame()
 
@@ -144,7 +150,7 @@ users_table['reg_time'] = [dt.datetime.now()]*len(users_table);
 
 print(dish_links_num)
 dish_links_price_list = []
-test_file = pd.read_csv('../train.csv')
+test_file = pd.read_csv('./database/train.csv')
 for i in test_file.columns:
     if i == 'checkout_price':
         len_prices = len(test_file[i])
@@ -160,15 +166,16 @@ dishes_table = dishes_table.drop_duplicates()
 rest_cuisine_links = rest_cuisine_links.drop_duplicates()
 rest_dish_links = rest_dish_links.drop_duplicates()
 
+
 users_table = users_table.drop_duplicates(subset = ['username'], ignore_index = True)
 
 
-loc_table.to_csv('../location.csv', index_label='location_id')
-restaurant_table.to_csv('../restaurant.csv', index_label='restaurant_id')
-cuisines_table.to_csv('../cuisines.csv', index_label = 'cuisine_id')
-dishes_table.to_csv('../dishes.csv', index_label='dish_id')
-rest_cuisine_links.to_csv('../restaurant_cuisine_links.csv', index_label = 'link_id')
-rest_dish_links.to_csv('../restaurant_dish_links.csv', index_label = 'link_id')
+loc_table.to_csv('./database/location.csv', index_label='location_id')
+restaurant_table.to_csv('./database/restaurant.csv', index_label='restaurant_id')
+cuisines_table.to_csv('./database/cuisines.csv', index_label = 'cuisine_id')
+dishes_table.to_csv('./database/dishes.csv', index_label='dish_id')
+rest_cuisine_links.to_csv('./database/restaurant_cuisine_links.csv', index_label = 'link_id')
+rest_dish_links.to_csv('./database/restaurant_dish_links.csv', index_label = 'link_id')
 
 
-users_table.to_csv('../userdata.csv', index = False)
+users_table.to_csv('./database/userdata.csv', index = False)
