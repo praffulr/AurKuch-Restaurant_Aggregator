@@ -20,8 +20,12 @@ create table cart_data(username text, item_id int, count int, PRIMARY KEY(userna
   CONSTRAINT item_in_list FOREIGN KEY(item_id) REFERENCES rest_dish_links(link_id));
 
 create table active_users( first_name text, last_name text, email_id text, gender text,location text, password text,
+<<<<<<< HEAD
   username text, ph_no text, dob timestamp, reg_time timestamp, login_time timestamp, PRIMARY KEY (username),
   CONSTRAINT active_user_in_user FOREIGN KEY (username) REFERENCES users(username) ) ;
+=======
+  username text, ph_no text, dob timestamp, reg_time timestamp, login_time timestamp, PRIMARY KEY (username) ) ;
+>>>>>>> 7c273e97931ba148d394a14792a384d43c5c26d4
 create table orders (order_time timestamp, username text, item_id integer, count integer, PRIMARY KEY(username, order_time));
   -----------------REMOVE THIS IN FINAL SUBMISSION---------------------
   create USER admin with password 'admin';
@@ -81,8 +85,13 @@ CREATE OR REPLACE FUNCTION change_loc() RETURNS TRIGGER AS
 $$
   BEGIN
     UPDATE users
+<<<<<<< HEAD
     SET location = NEW.location
     where location = OLD.location;
+=======
+    SET users.location = NEW.location
+    where users.location = OLD.location;
+>>>>>>> 7c273e97931ba148d394a14792a384d43c5c26d4
     RETURN NULL;
   END;
 $$ language plpgsql;

@@ -1,37 +1,77 @@
- <head>
-     <style>
-         .topright {
-              position: absolute;
-              top: 8px;
-              right: 16px;
-              font-size: 18px;
-            }
-     </style>
- </head>
- <a href="/"><div class="topright"> Logout </div> </a>
+<head>
+<style>
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #333;
+}
+
+li {
+  float: left;
+}
+
+li a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+li a:hover:not(.active) {
+  background-color: #111;
+}
+
+.active {
+  background-color: #4CAF50;
+}
+</style>
+</head>
+<body>
+
+<ul>
+  <li><a href="/homepage">Home</a></li>
+  <li style="float:right"><a class="active" href="/">Logout</a></li>
+  <li style="float:right"><a href="/userpage">User Page</a></li>
+</ul>
 <div class="container">
-            <table class="mt-5 table table-bordered">
-                <thead>
+            <!--<table class="mt-5 table table-bordered">-->
+                <form action="/{{rest_name}}/cart" method="POST">
+                {% for row in rows %}
+                    <p>{{row[0]}}
+                     <input type="number" id="{{row[0]}}" name="{{row[0]}}" step="1" min="0" value="0"></p>
+                {% endfor %}
+                <input type="submit" value = "submit">
+                </form>
+               <!-- <thead>
                     <tr>
                         <th scope="col">name</th>
                         <th scope="col">price</th>
-                        <th scope="col"></th><!--
+                        <th scope="col"></th>--><!--
                         <th scope="col">date</th> -->
-                    </tr>
+                    <!--</tr>
                 </thead>
                 <tbody>
+                     <form action="/cart">
                     {% for row in rows %}
-                    <tr>
-                        <form action="/cart" method="POST">
-                        <td scope="row"><input type="submit" id="{{row[0]}}" name="dishname" value="{{row[0]}}"></input></td>
-                        <td scope="row"><input type="submit" id="{{row[1]}}" name="dishid" value="{{row[1]}}"></td>
-                        <td scope="row"><Button>Add To Cart</Button></td>
-                        </form>
+                    <tr>-->
+                        <!--<form action="/cart" method="POST">-->
+                        <!--<td scope="row">--><!--<input type="submit" id="{{row[0]}}" name="dishname" value="--><!--{{row[0]}}--><!--"style="background:none;border:0;color:#000000"></input>--><!--</td>
+                        <td scope="row">--><!--<input type="submit" id="{{row[1]}}" name="dishid" value="--><!--{{row[1]}}--><!--"style="background:none;border:0;color:#000000">--><!--</td>-->
+                        <!--<td scope="row"><input type="submit" name="cart" value="Add to Cart"></input></td>-->
+                           <!-- <td scope="row">--><!--<label for="points">Points:</label>-->
+                            <!--<input type="number" id="points" name="points" step="1" min="0" value="0"></td>-->
+                        <!--</form>-->
+
                         <!--
                         <td scope="row">{{row[3]}}</td> -->
-                    </tr>
+                    <!--</tr>
                     {% endfor %}
-                </tbody>
+                    <input type="submit" value = "submit">
+                    </form>
+                </tbody>-->
             </table>
             <!-- <form action="/locations" method="POST">
                 <input type="text" name="Loc_Id" id="loc_id">

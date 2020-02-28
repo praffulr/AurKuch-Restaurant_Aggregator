@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<style>
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #333;
+}
+
+li {
+  float: left;
+}
+
+li a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+li a:hover:not(.active) {
+  background-color: #111;
+}
+
+.active {
+  background-color: #4CAF50;
+}
+</style>
+</head>
+<body>
+
+<ul>
+  <li><a href="/homepage">Home</a></li>
+  <li style="float:right"><a class="active" href="/">Logout</a></li>
+  <li style="float:right"><a href="/userpage">User Page</a></li>
+</ul>
+<body>
+	<div class="form">
+		<label for="username"><b>Username:</b> {{message[0][0]}}</label>
+		<br>
+		<label for="firstname"><b>First Name:</b> {{message[0][1]}}</label>
+		<br>
+		<label for="lastname"><b>Last Name:</b> {{message[0][2]}}</label>
+		<br>
+		<label for="emailid"><b>Email-Id:</b> {{message[0][3]}}</label>
+		<br>
+		<label for="gender"><b>Gender:</b> {{message[0][4]}}</label>
+		<br>
+		<label for="location"><b>Location:</b> {{message[0][5]}}</label>
+		<br>
+		<label for="phonenum"><b>Phone Number:</b> {{message[0][6]}}</label>
+		<br>
+		<label for="dob" type="date"><b>Date of Birth:</b> {{message[0][7]}}</label>
+		<br>
+	</div>
+</body>
+</html>

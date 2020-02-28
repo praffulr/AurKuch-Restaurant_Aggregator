@@ -1,4 +1,5 @@
-from flask import Flask, render_template, redirect, request
+from flask import Flask, render_template, redirect, request, session
+# from flask.session import Session
 import psycopg2
 import datetime as dt
 # import sys
@@ -10,39 +11,41 @@ conn = psycopg2.connect(db)
 cur = conn.cursor()
 
 app = Flask(__name__)
-
-
+app.secret_key = "abc"
 @app.route("/")
 def root():
-    # cur.execute("""SELECT name FROM restaurantsORDER BY random()LIMIT 25""")
-    # rows = cur.fetchall()
-    try:
-        cur.execute(
-            """
-                DROP VIEW current_user_details;
-            """
-            )
-    except:
-        pass
-    return render_template("users.html", message="")
+    if session.get('username') != None:
+        return render_template("base.html")
+    else:
+        return render_template("users.html", message="")
 
-@app.route("/homepage", methods = ['POST'])
+@app.route("/homepage", methods = ['POST', 'GET'])
 def home():
     if request.method == 'POST':
+        try:
+            cur.execute(
+                """
+                    DROP VIEW current_user_details;
+                """
+                )
+        except:
+            pass
+        conn.commit()
         username = request.form.get("Username")
         password = request.form.get("Password")
         cur.execute(
             """
                 SELECT * FROM users
-                WHERE username=\'{}\' AND password=\'{}\'
+                WHERE username=\'{}\' AND password=\'{}\';
             """.format(username, password)
             )
         if len(cur.fetchall()) > 0:
+            session['username'] = username
             cur.execute(
             """
                 CREATE VIEW current_user_details as
                 select * from users
-                where users.username = \'{}\' and users.password = \'{}\'
+                where users.username = \'{}\' and users.password = \'{}\';
             """.format(username, password)
             )
             cur.execute(
@@ -57,13 +60,34 @@ def home():
                 from restaurants INNER JOIN locs
                   on restaurants.location = locs.location
                 ORDER BY restaurants.votes desc
-                LIMIT 25
+                LIMIT 25;
             """
             )
             conn.commit()
             rows = cur.fetchall()
             return render_template("base.html", rows = rows)
         return render_template("users.html", message="Invalid Username or Password")
+    else:
+        try:
+            cur.execute(
+                """
+                    WITH locs as
+                    (
+                        select distinct(locations.location) as location
+                        from locations, current_user_details
+                          where locations.listed_in_city = current_user_details.location
+                    )
+                    SELECT name
+                    from restaurants INNER JOIN locs
+                      on restaurants.location = locs.location
+                    ORDER BY restaurants.votes desc
+                    LIMIT 25;
+                """
+                )
+            rows = cur.fetchall()
+            return render_template("base.html", rows=rows)
+        except :
+            return render_template("users.html", message="")
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
@@ -93,6 +117,21 @@ def register():
             return render_template('register.html', message="Username might be taken (or) Invalid Credentials entered")
     else:
         return render_template('register.html', message="", )
+
+@app.route("/userpage")
+def userpage():
+    cur.execute(
+        """
+            select username, first_name, last_name, email_id, gender, location, ph_no, dob from current_user_details;
+        """
+        )
+    rows = cur.fetchall()
+    rows = list(rows)
+    rows[0] = list(rows[0])
+    rows[0][-1] = rows[0][-1].strftime("%d-%m-%Y")
+    rows[0] = tuple(rows[0])
+    rows = tuple(rows)
+    return render_template("userPage.html", message=rows)
 
 
 @app.route("/locations", methods=['GET', 'POST'])
@@ -125,43 +164,34 @@ def rests():
         # return format(loc)
         return render_template("base.html", rows=rows)
 
-@app.route("/dishrestaurant",methods=['GET', 'POST'])
-def dishrestaurant():
+@app.route("/<name>/dishrestaurant",methods=['GET', 'POST'])
+def dishrestaurant(name):
     if request.method == 'POST':
         searchdish=request.form.get("rest")
         cur.execute(
         """
-            select dish_liked,price 
-            from dishes, restaurants,rest_dish_links 
-            where rest_id=restaurant_id and dishes.dish_id=rest_dish_links.link_id 
+            select dish_liked
+            from dishes, restaurants,rest_dish_links
+            where rest_id=restaurant_id and dishes.dish_id=rest_dish_links.link_id
             and name=\'{}\'
         """.format(searchdish)
            )
         rows = cur.fetchall()
-        return render_template("dishrestaurant.html",rows=rows)
+    return render_template("dishrestaurant.html",rows=rows, rest_name=name)
 
-@app.route("/cart",methods=['GET', 'POST'])
-def cart():
-    if request.method == 'POST':
-        dishname=request.form.get("dishname")
-        dishid=request.form.get("dishid")
-        cur.execute(
-        """
-            CREATE TEMP TABLE temp_table AS 
-            WITH t (dishname, dishprice) AS ( 
-            VALUES 
-            (\'{}\'::text,\'{}\'::text)
-            ) 
-            SELECT * FROM t
-        """.format(dishname,dishid)
-        )
-        cur.execute(
-        """
-            select * from temp_table
-        """
-        )
-        rows = cur.fetchall()
-    return render_template("cart.html",rows=rows)
+@app.route("/<rest_name>/cart",methods=['GET','POST'])
+def cart(rest_name):
+	if request.method == 'POST':
+		result = request.form
+		temp = {}
+		for i in result.keys():
+			if result[i] != '0':
+				temp[i] = result[i]
+#		for i in temp
+#		cur.execute(
+#			"""
+#			""")
+		return render_template("cart.html",result = temp)
 # @app.route("/restaurants", methods=['GET', 'POST'])
 # def restaurantSearch():
 #     if request.method == 'POST':
