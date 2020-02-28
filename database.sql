@@ -29,30 +29,14 @@ create table cart_data(username text, item_id int, count int, PRIMARY KEY(userna
   CONSTRAINT item_in_list FOREIGN KEY(item_id) REFERENCES rest_dish_links(link_id));
 
 create table active_users( first_name text, last_name text, email_id text, gender text,
-  location text, password text,username text, ph_no text, dob timestamp, login_time timestamp, PRIMARY KEY (username) ) ;
+  location text, password text,username text, ph_no text, dob timestamp, reg_time timestamp, login_time timestamp, PRIMARY KEY (username) ) ;
 create table orders (order_time timestamp, username text, item_id integer, count integer, PRIMARY KEY(username, order_time));
   -----------------REMOVE THIS IN FINAL SUBMISSION---------------------
   create USER admin with password 'admin';
     GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA PUBLIC TO admin;
   ---------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION change_loc() RETURNS TRIGGER AS
-$$
-  BEGIN
-    UPDATE users
-    SET users.location = NEW.location
-    where users.location = OLD.location;
-    RETURN NULL;
-  END;
-$$ language plpgsql;
 
-CREATE TRIGGER update_location
-  AFTER UPDATE ON active_users
-  FOR EACH ROW
-  EXECUTE PROCEDURE change_loc();
-CREATE FUNCTION cond_loc_in_locs(location text, locations) RETURNS BOOLEAN AS $$
-  SELECT ( $1 IN ($2.listed_in_city) );
-$$ LANGUAGE SQL;
 --
 -- CREATE FUNCTION loc_in_locs() RETURNS TRIGGER AS $$
 -- BEGIN
@@ -106,7 +90,57 @@ copy users from '/home/lalithsrinivas/DBMS/Project/userdata.csv' with (FORMAT cs
 
 
 
--- CREATE OR REPLACE FUNCTION login(username text, password text)
+--helper function----------------------------
+CREATE OR REPLACE FUNCTION item_in_cart(username text, item_id integer) RETURNS BOOLEAN AS
+$$
+    SELECT
+    (
+      (
+        SELECT username = ANY (SELECT username from cart_data)
+      )
+      AND
+      (
+        SELECT item_id = ANY (SELECT item_id from cart_data)
+      )
+    );
+$$ language SQL;
+
+--helper for finding rest_dish_link_id
+CREATE OR REPLACE FUNCTION link_id(rest_id_1 integer, dish text) RETURNS INTEGER AS
+$$
+  BEGIN
+    RETURN
+    (
+      WITH
+      temp_1 AS
+      (
+        Select dish_id as id
+        FROM dishes
+        where dishes.dish_liked = dish
+      )
+      select rest_dish_links.link_id
+      FROM rest_dish_links INNER JOIN temp_1 ON temp_1.id = rest_dish_links.dish_id
+      WHERE rest_id_1 = rest_dish_links.rest_id
+    );
+  END;
+$$ language plpgsql;
+----------------------------------------------
+
+--trigger for updating location in user when updated in active_users table
+CREATE OR REPLACE FUNCTION change_loc() RETURNS TRIGGER AS
+$$
+  BEGIN
+    UPDATE users
+    SET location = NEW.location
+    where location = OLD.location;
+    RETURN NULL;
+  END;
+$$ language plpgsql;
+
+CREATE TRIGGER update_location
+  AFTER UPDATE ON active_users
+  FOR EACH ROW
+  EXECUTE PROCEDURE change_loc();
 
 
 --Show 'lim' number of results searched by keyword 'searchby' in mode 'search_mode' sorted in 'sort_mode' - inc/dec given by 'flag'
@@ -123,8 +157,8 @@ CREATE OR REPLACE FUNCTION search_rests(search_mode integer, searchby text, sort
   TABLE(Name text, rest_type text, rating_5 float, address text, phone_number text) AS
   $$
   BEGIN
-    IF (SELECT (search_mode == 1)) THEN
-      IF (SELECT sort_flag) THEN
+    IF (search_mode = 1) THEN
+      IF (sort_flag) THEN
         RETURN QUERY
         (
           SELECT restaurants.Name, restaurants.rest_type, restaurants.rate_5, restaurants.address, restaurants.phone
@@ -143,8 +177,8 @@ CREATE OR REPLACE FUNCTION search_rests(search_mode integer, searchby text, sort
           LIMIT lim
         );
       END IF;
-    ELSIF (SELECT (search_mode == 2)) THEN
-      IF (SELECT sort_flag) THEN
+    ELSIF (search_mode = 2) THEN
+      IF (sort_flag) THEN
         RETURN QUERY
         (
           WITH
@@ -181,8 +215,8 @@ CREATE OR REPLACE FUNCTION search_rests(search_mode integer, searchby text, sort
           LIMIT lim
         );
       END IF;
-    ELSIF (SELECT (search_mode == 3)) THEN
-      IF (SELECT sort_flag) THEN
+    ELSIF (search_mode = 3) THEN
+      IF (sort_flag) THEN
         RETURN QUERY
         (
           WITH
@@ -219,8 +253,8 @@ CREATE OR REPLACE FUNCTION search_rests(search_mode integer, searchby text, sort
           LIMIT lim
         );
       END IF;
-    ELSIF (SELECT (search_mode == 4)) THEN
-      IF (SELECT sort_flag) THEN
+    ELSIF (search_mode = 4) THEN
+      IF (sort_flag) THEN
         RETURN QUERY
         (
           SELECT restaurants.Name, restaurants.rest_type, restaurants.rate_5, restaurants.address, restaurants.phone
@@ -243,35 +277,20 @@ CREATE OR REPLACE FUNCTION search_rests(search_mode integer, searchby text, sort
   END;
   $$ language plpgsql;
 
-
-CREATE OR REPLACE FUNCTION item_in_cart(username text, item_id integer) RETURNS BOOLEAN AS
-$$
-    SELECT
-    (
-      (
-        SELECT username = ANY (SELECT username from cart_data)
-      )
-      AND
-      (
-        SELECT item_id = ANY (SELECT item_id from cart_data)
-      )
-    );
-$$ language SQL;
-
 --item_id is link_id in the rest_dish_links table
-CREATE OR REPLACE FUNCTION update_cart(username text, item_id integer, count integer) returns VOID AS
+CREATE OR REPLACE FUNCTION update_cart(username_1 text, item_id_1 integer, count_1 integer) returns VOID AS
 $$
   BEGIN
-    IF(item_in_cart(username, item_id)) THEN
+    IF(item_in_cart(username_1, item_id_1)) THEN
       --update
         UPDATE cart_data
-        SET cart_data.count = count
-        WHERE cart_data.username = username and cart_data.item_id = item_id;
+        SET count = count_1
+        WHERE username = username_1 and item_id = item_id_1;
     ELSE
     --insert
         INSERT
         INTO cart_data
-        VALUES(username, item_id, count);
+        VALUES(username_1, item_id_1, count_1);
     END IF;
   END;
 $$ language plpgsql;
@@ -281,7 +300,52 @@ CREATE OR REPLACE FUNCTION update_user_loc(username text, new_loc text) RETURNS 
 $$
   BEGIN
     UPDATE active_users
-    SET active_users.location = new_loc
-    WHERE active_users.username = username;
+    SET location = new_loc
+    WHERE username = username;
   END;
 $$ language plpgsql;
+
+--function for login
+CREATE OR REPLACE FUNCTION login(username_1 text, password_1 text) RETURNS VOID AS
+
+-- TABLE(first_name text, last_name text, email_id text, gender text,location text, password text,
+--   username text, ph_no text, dob timestamp, reg_time timestamp, login_time timestamp) AS
+$$
+  BEGIN
+        INSERT INTO active_users
+        (
+        SELECT *, current_timestamp
+        FROM users
+        WHERE users.username = username_1 and users.password = password_1
+        );
+        IF (
+           (
+             SELECT COUNT(t)
+             FROM
+             (
+               SELECT *, current_timestamp as t
+               FROM users
+               WHERE users.username = username_1 and users.password = password_1
+             ) as temp
+           )
+            = 0) THEN
+           RAISE EXCEPTION 'INVALID CREDENTIALS';
+        END IF;
+    -- Values(current_user.first_name, current_user.last_name , current_user.email_id, current_user.gender,
+    -- current_user.location, current_user.password, current_user.username, current_user.ph_no, current_user.dob , current_user.reg_time ,
+    -- current_timestamp);
+  END;
+$$ language plpgsql;
+
+--function for logout
+CREATE OR REPLACE FUNCTION logout(username_1 text) RETURNS VOID AS
+$$
+  BEGIN
+    DELETE
+    FROM active_users
+    WHERE active_users.username = username_1;
+  END;
+$$ language plpgsql;
+
+--ORDER
+-- CREATE OR REPLACE FUNCTION order(username text, item_id)

@@ -15,6 +15,7 @@ app.secret_key = "abc"
 @app.route("/")
 def root():
     if session.get('username') != None:
+        print(session['username'])
         return render_template("base.html")
     else:
         return render_template("users.html", message="")
@@ -69,7 +70,7 @@ def home():
                 SELECT name
                 from restaurants INNER JOIN locs
                   on restaurants.location = locs.location
-                ORDER BY restaurants.votes desc
+                ORDER BY restaurants.rate_5 desc
                 LIMIT 25;
             """.format(session['username'])
             )
@@ -144,7 +145,29 @@ def userpage():
     rows[0][-1] = rows[0][-1].strftime("%d-%m-%Y")
     rows[0] = tuple(rows[0])
     rows = tuple(rows)
-    return render_template("userPage.html", message=rows)
+    cur.execute(
+        """
+            SELECT restaurants.name, dishes.dish_liked, price, cart_data.count, price*cart_data.count
+            FROM cart_data, restaurants, dishes, rest_dish_links
+            WHERE rest_dish_links.link_id = cart_data.item_id
+                AND cart_data.username = \'{}\'
+                AND rest_dish_links.rest_id = restaurants.restaurant_id
+                AND rest_dish_links.dish_id = dishes.dish_id;
+        """.format(session['username'])
+        )
+    cart = cur.fetchall()
+    cur.execute(
+        """
+            SELECT restaurants.name, dishes.dish_liked, price, orders.count, price*orders.count, orders.order_time
+            FROM orders, restaurants, dishes, rest_dish_links
+            WHERE rest_dish_links.link_id = orders.item_id
+                AND orders.username = \'{}\'
+                AND rest_dish_links.rest_id = restaurants.restaurant_id
+                AND rest_dish_links.dish_id = dishes.dish_id;
+        """.format(session['username'])
+        )
+    orders = cur.fetchall()
+    return render_template("userPage.html", message=rows, cart=cart, orders=orders)
 
 
 @app.route("/locations", methods=['GET', 'POST'])
@@ -156,6 +179,7 @@ def locations():
         """
             SELECT name, address, rate_5, approx_cost_for_two, restaurant_id  FROM RESTAURANTS
             where location = \'{}\'
+            order by rate_5 desc
         """.format(loc)
         )
         rows = cur.fetchall()
@@ -208,14 +232,12 @@ def cart(rest_id):
             print(temp[i].lower(), session['username'], rest_id.lower(), i.lower())
             cur.execute(
     			"""
-                   INSERT INTO cart_data(username, item_id, count)
-                   SELECT active_users.username, rest_dish_links.link_id as item_id, \'{}\' as count
-                   FROM active_users, rest_dish_links, restaurants, dishes
-                   WHERE active_users.username = \'{}\'
-                       AND rest_dish_links.rest_id = \'{}\'
-                       AND rest_dish_links.dish_id = dishes.dish_id
-                       AND dishes.dish_liked = \'{}\';
-    			""".format(temp[i].lower(), session['username'], rest_id.lower(), i.lower())
+                   SELECT update_cart(\'{}\',
+                    (
+                        SELECT link_id(\'{}\', \'{}\')
+                    ),
+                    \'{}\');
+    			""".format(session['username'], rest_id, i.lower(), temp[i])
                 )
             conn.commit()
         return render_template("cart.html",result = temp)

@@ -56,7 +56,63 @@ li a:hover:not(.active) {
 		<label for="phonenum"><b>Phone Number:</b> {{message[0][6]}}</label>
 		<br>
 		<label for="dob" type="date"><b>Date of Birth:</b> {{message[0][7]}}</label>
-		<br>
+		<br><br>
+    <hr>
+    <br>
+    <h3>Cart</h3>
+    <table class="mt-5 table table-bordered">
+        <thead>
+            <tr>
+                <th scope="col">restaurant name</th>
+                <th scope="col">dish</th>
+                <th scope="col">price</th>
+                <th scope="col">quantity</th>
+                <th scope="col">total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in cart %}
+            <tr>
+                <td scope="row">{{row[0]}}</td>
+                <td scope="row">{{row[1]}}</td>
+                <td scope="row">{{row[2]}}</td>
+                <td scope="row">{{row[3]}}</td>
+                <td scope="row">{{row[4]}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br>
+    <hr>
+    <br>
+    <h3>Orders</h3>
+    <table class="mt-5 table table-bordered">
+        <thead>
+            <tr>
+                <th scope="col">Timestamp</th>
+                <th scope="col">restaurant name</th>
+                <th scope="col">dish</th>
+                <th scope="col">price</th>
+                <th scope="col">quantity</th>
+                <th scope="col">total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in orders %}
+            <tr>
+                <td scope="row">{{row[5]}}</td>
+                <td scope="row">{{row[0]}}</td>
+                <td scope="row">{{row[1]}}</td>
+                <td scope="row">{{row[2]}}</td>
+                <td scope="row">{{row[3]}}</td>
+                <td scope="row">{{row[4]}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br>
+    <hr>
+    <br>
 	</div>
 </body>
 </html>
