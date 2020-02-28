@@ -1,18 +1,9 @@
 create database project;
 \c project;
 
-CREATE or REPLACE FUNCTION calculate_age(a timestamp, b timestamp) RETURNS float AS $$
-  ( ( SELECT EXTRACT (YEAR FROM (SELECT age(a, b)) ) ));
-$$ LANGUAGE SQL;
-
-CREATE OR REPLACE FUNCTION return_query() RETURNS VOID AS
-$$
-
--- create database temp;
---   drop database temp;
-create VIEW x as select * from users;
-
-$$ language sql;
+-- CREATE or REPLACE FUNCTION calculate_age(a timestamp, b timestamp) RETURNS float AS $$
+--   ( ( SELECT EXTRACT (YEAR FROM (SELECT age(a, b)) ) ));
+-- $$ LANGUAGE SQL;
 
 create table locations(location_id int, location text, listed_in_city text, PRIMARY KEY(location, listed_in_city));
 create table cities(city text, CONSTRAINT city_uniq UNIQUE(city));
@@ -28,14 +19,63 @@ create table users(first_name text, last_name text, email_id text, gender text,l
 create table cart_data(username text, item_id int, count int, PRIMARY KEY(username, item_id),
   CONSTRAINT item_in_list FOREIGN KEY(item_id) REFERENCES rest_dish_links(link_id));
 
-create table active_users( first_name text, last_name text, email_id text, gender text,
-  location text, password text,username text, ph_no text, login_time timestamp, PRIMARY KEY (username) ) ;
+create table active_users( first_name text, last_name text, email_id text, gender text,location text, password text,
+  username text, ph_no text, dob timestamp, reg_time timestamp, login_time timestamp, PRIMARY KEY (username) ) ;
 create table orders (order_time timestamp, username text, item_id integer, count integer, PRIMARY KEY(username, order_time));
   -----------------REMOVE THIS IN FINAL SUBMISSION---------------------
   create USER admin with password 'admin';
     GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA PUBLIC TO admin;
   ---------------------------------------------------------------------
 
+
+copy locations from '/home/prafful/sem6/DBMS/Project/database/location.csv' with (FORMAT csv, HEADER);
+--Inserting from locations into cities
+INSERT INTO cities(city) ( SELECT distinct(listed_in_city) FROM locations );
+copy dishes from '/home/prafful/sem6/DBMS/Project/database/dishes.csv' with (FORMAT csv, HEADER);
+copy restaurants from '/home/prafful/sem6/DBMS/Project/database/restaurant.csv' with (FORMAT csv, HEADER, DELIMITER ',');
+copy rest_dish_links from '/home/prafful/sem6/DBMS/Project/database/restaurant_dish_links.csv' with (FORMAT csv, HEADER);
+copy rest_cuisine_links from '/home/prafful/sem6/DBMS/Project/database/restaurant_cuisine_links.csv' with (FORMAT csv, HEADER);
+copy cuisines from '/home/prafful/sem6/DBMS/Project/database/cuisines.csv' with (FORMAT csv, HEADER);
+copy users from '/home/prafful/sem6/DBMS/Project/database/userdata.csv' with (FORMAT csv, HEADER);
+
+
+
+--helper function----------------------------
+CREATE OR REPLACE FUNCTION item_in_cart(username text, item_id integer) RETURNS BOOLEAN AS
+$$
+    SELECT
+    (
+      (
+        SELECT username = ANY (SELECT username from cart_data)
+      )
+      AND
+      (
+        SELECT item_id = ANY (SELECT item_id from cart_data)
+      )
+    );
+$$ language SQL;
+
+--helper for finding rest_dish_link_id
+CREATE OR REPLACE FUNCTION link_id(rest_id integer, dish text) RETURNS INTEGER AS
+$$
+  BEGIN
+    RETURN
+    (
+      WITH
+      temp_1 AS
+      (
+        Select dish_id as id
+        FROM dishes
+        where dishes.dish_liked = dish
+      )
+      select rest_dish_links.link_id
+      FROM rest_dish_links INNER JOIN temp_1 ON temp_1.id = rest_dish_links.dish_id
+    );
+  END;
+$$ language plpgsql;
+----------------------------------------------
+
+--trigger for updating location in user when updated in active_users table
 CREATE OR REPLACE FUNCTION change_loc() RETURNS TRIGGER AS
 $$
   BEGIN
@@ -50,63 +90,6 @@ CREATE TRIGGER update_location
   AFTER UPDATE ON active_users
   FOR EACH ROW
   EXECUTE PROCEDURE change_loc();
-CREATE FUNCTION cond_loc_in_locs(location text, locations) RETURNS BOOLEAN AS $$
-  SELECT ( $1 IN ($2.listed_in_city) );
-$$ LANGUAGE SQL;
---
--- CREATE FUNCTION loc_in_locs() RETURNS TRIGGER AS $$
--- BEGIN
---   IF (SELECT cond_loc_in_locs(NEW.location, locations.listed_in_city)) THEN
---     INSERT INTO users(first_name, last_name, email_id, gender,
---       location, password, username, ph_no, dob, reg_time)
---       VALUES (new.first_name, new.last_name, new.email_id, new.gender, new.location, new.password
---         , new.username, new.ph_no, new.dob, current_timestamp);
---   END IF;
---   RETURN NEW;
--- END;
--- $$ LANGUAGE plpgsql;
---
--- CREATE TRIGGER loc_in_locations
---   BEFORE INSERT ON users
---   FOR EACH ROW
---   --WHEN (users.location IN locations.listed_in_city)
---   EXECUTE PROCEDURE loc_in_locs();
-
-
-
--- CREATE FUNCTION insert_entry() RETURNS TRIGGER AS
--- $$
---   BEGIN
---     IF (calculate_age(NEW.reg_time, NEW.dob) < 18) THEN
---       DELETE VALUES(NEW) FROM users;
---       RAISE EXCEPTION 'User is not an adult';
---     END IF;
---     RETURN NULL;
---   END;
--- $$ LANGUAGE plpgsql;
---
--- CREATE TRIGGER user_age
---   AFTER INSERT ON users
---   FOR EACH ROW
---   --WHEN (calculate_age(NEW.reg_time, NEW.dob) >= 18)
---   EXECUTE PROCEDURE insert_entry();
-
--- CREATE RULE user_age
-
-copy locations from '/home/prafful/sem6/DBMS/Project/database/location.csv' with (FORMAT csv, HEADER);
---Inserting from locations into cities
-INSERT INTO cities(city) ( SELECT distinct(listed_in_city) FROM locations );
-copy dishes from '/home/prafful/sem6/DBMS/Project/database/dishes.csv' with (FORMAT csv, HEADER);
-copy restaurants from '/home/prafful/sem6/DBMS/Project/database/restaurant.csv' with (FORMAT csv, HEADER, DELIMITER ',');
-copy rest_dish_links from '/home/prafful/sem6/DBMS/Project/database/restaurant_dish_links.csv' with (FORMAT csv, HEADER);
-copy rest_cuisine_links from '/home/prafful/sem6/DBMS/Project/database/restaurant_cuisine_links.csv' with (FORMAT csv, HEADER);
-copy cuisines from '/home/prafful/sem6/DBMS/Project/database/cuisines.csv' with (FORMAT csv, HEADER);
-copy users from '/home/prafful/sem6/DBMS/Project/database/userdata.csv' with (FORMAT csv, HEADER);
-
-
-
-
--- CREATE OR REPLACE FUNCTION login(username text, password text)
 
 
 --Show 'lim' number of results searched by keyword 'searchby' in mode 'search_mode' sorted in 'sort_mode' - inc/dec given by 'flag'
@@ -123,8 +106,8 @@ CREATE OR REPLACE FUNCTION search_rests(search_mode integer, searchby text, sort
   TABLE(Name text, rest_type text, rating_5 float, address text, phone_number text) AS
   $$
   BEGIN
-    IF (SELECT (search_mode == 1)) THEN
-      IF (SELECT sort_flag) THEN
+    IF (search_mode = 1) THEN
+      IF (sort_flag) THEN
         RETURN QUERY
         (
           SELECT restaurants.Name, restaurants.rest_type, restaurants.rate_5, restaurants.address, restaurants.phone
@@ -143,8 +126,8 @@ CREATE OR REPLACE FUNCTION search_rests(search_mode integer, searchby text, sort
           LIMIT lim
         );
       END IF;
-    ELSIF (SELECT (search_mode == 2)) THEN
-      IF (SELECT sort_flag) THEN
+    ELSIF (search_mode = 2) THEN
+      IF (sort_flag) THEN
         RETURN QUERY
         (
           WITH
@@ -181,8 +164,8 @@ CREATE OR REPLACE FUNCTION search_rests(search_mode integer, searchby text, sort
           LIMIT lim
         );
       END IF;
-    ELSIF (SELECT (search_mode == 3)) THEN
-      IF (SELECT sort_flag) THEN
+    ELSIF (search_mode = 3) THEN
+      IF (sort_flag) THEN
         RETURN QUERY
         (
           WITH
@@ -219,8 +202,8 @@ CREATE OR REPLACE FUNCTION search_rests(search_mode integer, searchby text, sort
           LIMIT lim
         );
       END IF;
-    ELSIF (SELECT (search_mode == 4)) THEN
-      IF (SELECT sort_flag) THEN
+    ELSIF (search_mode = 4) THEN
+      IF (sort_flag) THEN
         RETURN QUERY
         (
           SELECT restaurants.Name, restaurants.rest_type, restaurants.rate_5, restaurants.address, restaurants.phone
@@ -242,21 +225,6 @@ CREATE OR REPLACE FUNCTION search_rests(search_mode integer, searchby text, sort
     END IF;
   END;
   $$ language plpgsql;
-
-
-CREATE OR REPLACE FUNCTION item_in_cart(username text, item_id integer) RETURNS BOOLEAN AS
-$$
-    SELECT
-    (
-      (
-        SELECT username = ANY (SELECT username from cart_data)
-      )
-      AND
-      (
-        SELECT item_id = ANY (SELECT item_id from cart_data)
-      )
-    );
-$$ language SQL;
 
 --item_id is link_id in the rest_dish_links table
 CREATE OR REPLACE FUNCTION update_cart(username text, item_id integer, count integer) returns VOID AS
@@ -285,3 +253,48 @@ $$
     WHERE active_users.username = username;
   END;
 $$ language plpgsql;
+
+--function for login
+CREATE OR REPLACE FUNCTION login(username_1 text, password_1 text) RETURNS VOID AS
+
+-- TABLE(first_name text, last_name text, email_id text, gender text,location text, password text,
+--   username text, ph_no text, dob timestamp, reg_time timestamp, login_time timestamp) AS
+$$
+  BEGIN
+        INSERT INTO active_users
+        (
+        SELECT *, current_timestamp
+        FROM users
+        WHERE users.username = username_1 and users.password = password_1
+        );
+        IF (
+           (
+             SELECT COUNT(t)
+             FROM
+             (
+               SELECT *, current_timestamp as t
+               FROM users
+               WHERE users.username = username_1 and users.password = password_1
+             ) as temp
+           )
+            = 0) THEN
+           RAISE EXCEPTION 'INVALID CREDENTIALS';
+        END IF;
+    -- Values(current_user.first_name, current_user.last_name , current_user.email_id, current_user.gender,
+    -- current_user.location, current_user.password, current_user.username, current_user.ph_no, current_user.dob , current_user.reg_time ,
+    -- current_timestamp);
+  END;
+$$ language plpgsql;
+
+--function for logout
+CREATE OR REPLACE FUNCTION logout(username_1 text) RETURNS VOID AS
+$$
+  BEGIN
+    DELETE
+    FROM active_users
+    WHERE active_users.username = username_1;
+  END;
+$$ language plpgsql;
+
+--ORDER
+CREATE OR REPLACE FUNCTION order(username text, item_id)
