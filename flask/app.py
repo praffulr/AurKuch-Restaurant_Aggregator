@@ -145,6 +145,7 @@ def userpage():
     rows[0][-1] = rows[0][-1].strftime("%d-%m-%Y")
     rows[0] = tuple(rows[0])
     rows = tuple(rows)
+<<<<<<< HEAD
     cur.execute(
         """
             SELECT restaurants.name, dishes.dish_liked, price, cart_data.count, price*cart_data.count
@@ -168,6 +169,9 @@ def userpage():
         )
     orders = cur.fetchall()
     return render_template("userPage.html", message=rows, cart=cart, orders=orders)
+=======
+    return render_template("userPage.html", message=rows)
+>>>>>>> 1c956c2769984508597cac1b08d84165cf3eac29
 
 
 @app.route("/locations", methods=['GET', 'POST'])
@@ -207,6 +211,7 @@ def dishrestaurant(restaurant_id):
         # rest_=request.form.get("rest").lower()
         cur.execute(
         """
+<<<<<<< HEAD
             with temp_1 As
             (
                 SELECT rest_dish_links.dish_id as id
@@ -216,6 +221,13 @@ def dishrestaurant(restaurant_id):
             select dish_liked
             from temp_1 INNER JOIN dishes ON dishes.dish_id = temp_1.id
         """.format(restaurant_id)
+=======
+            select dish_liked
+            from dishes, restaurants,rest_dish_links
+            where rest_id=restaurant_id and dishes.dish_id=rest_dish_links.link_id
+            and name=\'{}\'
+        """.format(searchdish)
+>>>>>>> 1c956c2769984508597cac1b08d84165cf3eac29
            )
         rows = cur.fetchall()
     return render_template("dishrestaurant.html",rows=rows, rest_name=restaurant_id)

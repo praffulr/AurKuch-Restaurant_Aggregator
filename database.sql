@@ -28,8 +28,13 @@ create table users(first_name text, last_name text, email_id text, gender text,l
 create table cart_data(username text, item_id int, count int, PRIMARY KEY(username, item_id),
   CONSTRAINT item_in_list FOREIGN KEY(item_id) REFERENCES rest_dish_links(link_id));
 
-create table active_users( first_name text, last_name text, email_id text, gender text,
-  location text, password text,username text, ph_no text, dob timestamp, reg_time timestamp, login_time timestamp, PRIMARY KEY (username) ) ;
+create table active_users( first_name text, last_name text, email_id text, gender text,location text, password text,
+<<<<<<< HEAD
+  username text, ph_no text, dob timestamp, reg_time timestamp, login_time timestamp, PRIMARY KEY (username),
+  CONSTRAINT active_user_in_user FOREIGN KEY (username) REFERENCES users(username) ) ;
+=======
+  username text, ph_no text, dob timestamp, reg_time timestamp, login_time timestamp, PRIMARY KEY (username) ) ;
+>>>>>>> 1c956c2769984508597cac1b08d84165cf3eac29
 create table orders (order_time timestamp, username text, item_id integer, count integer, PRIMARY KEY(username, order_time));
   -----------------REMOVE THIS IN FINAL SUBMISSION---------------------
   create USER admin with password 'admin';
@@ -133,6 +138,7 @@ $$
     UPDATE users
     SET location = NEW.location
     where location = OLD.location;
+>>>>>>> 1c956c2769984508597cac1b08d84165cf3eac29
     RETURN NULL;
   END;
 $$ language plpgsql;
@@ -296,12 +302,12 @@ $$
 $$ language plpgsql;
 
 --updating user's location
-CREATE OR REPLACE FUNCTION update_user_loc(username text, new_loc text) RETURNS VOID AS
+CREATE OR REPLACE FUNCTION update_user_loc(username_1 text, new_loc text) RETURNS VOID AS
 $$
   BEGIN
     UPDATE active_users
     SET location = new_loc
-    WHERE username = username;
+    WHERE username = username_1;
   END;
 $$ language plpgsql;
 
@@ -347,5 +353,26 @@ $$
   END;
 $$ language plpgsql;
 
+
+-- --TRIGGER FOR CART-ORDER
+CREATE OR REPLACE FUNCTION delete_in_cart_func() RETURNS TRIGGER AS
+$$
+  BEGIN
+    DELETE
+    FROM cart_data
+    WHERE (username=NEW.username and item_id=NEW.username and count=NEW.count);
+    RETURN NULL;
+  END;
+$$ language plpgsql;
+
+CREATE TRIGGER cart_order
+AFTER INSERT ON orders
+FOR EACH ROW
+EXECUTE PROCEDURE delete_in_cart_func();
 --ORDER
--- CREATE OR REPLACE FUNCTION order(username text, item_id)
+CREATE OR REPLACE FUNCTION ordering(username text, item_id integer, count integer) RETURNS VOID AS
+$$
+  BEGIN
+    INSERT INTO orders VALUES(current_timestamp, username, item_id, count);
+  END;
+$$ language plpgsql;
