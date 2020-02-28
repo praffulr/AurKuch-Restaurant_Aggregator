@@ -1,0 +1,16 @@
+body {
+  background-color: lightblue;
+}
+
+h1 {
+  color: navy;
+  margin-left: 20px;
+}
+
+.submitLink {
+background-color: transparent;
+text-decoration: underline;
+border: none;
+color: blue;
+cursor: pointer;
+}

@@ -15,7 +15,7 @@ loc_table = pd.DataFrame()
 loc_columns = ['location', 'listed_in(city)']
 
 restaurant_table = pd.DataFrame()
-restaurant_col = ['url', 'address', 'name', 'online_order', 'book_table', 'rate', 'votes', 'phone', 'location', 'rest_type', 'approx_cost(for two people)']
+restaurant_col = ['address', 'name', 'online_order', 'book_table', 'rate', 'votes', 'phone', 'location', 'rest_type', 'approx_cost(for two people)']
 rate_list = []
 
 dishes_table = pd.DataFrame()
@@ -26,6 +26,12 @@ cuisines_table = pd.DataFrame()
 cuisines_list = []
 cuisines_col = ['cuisines']
 
+for i in all_columns:
+    if (i in  ['location', 'listed_in(city)', 'name', 'dish_liked', 'cuisines']):
+        l = len(original_file[i])
+        for j in range (0, l):
+            if ( not pd.isnull(original_file[i][j])):
+                original_file[i][j] = original_file[i][j].lower()
 
 rest_dish_links = pd.DataFrame()
 rest_id_link1 = []
@@ -159,6 +165,7 @@ cuisines_table = cuisines_table.drop_duplicates()
 dishes_table = dishes_table.drop_duplicates()
 rest_cuisine_links = rest_cuisine_links.drop_duplicates()
 rest_dish_links = rest_dish_links.drop_duplicates()
+
 
 users_table = users_table.drop_duplicates(subset = ['username'], ignore_index = True)
 
