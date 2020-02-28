@@ -29,7 +29,7 @@ create table cart_data(username text, item_id int, count int, PRIMARY KEY(userna
   CONSTRAINT item_in_list FOREIGN KEY(item_id) REFERENCES rest_dish_links(link_id));
 
 create table active_users( first_name text, last_name text, email_id text, gender text,
-  location text, password text,username text, ph_no text, login_time timestamp, PRIMARY KEY (username) ) ;
+  location text, password text,username text, ph_no text, dob timestamp, login_time timestamp, PRIMARY KEY (username) ) ;
 create table orders (order_time timestamp, username text, item_id integer, count integer, PRIMARY KEY(username, order_time));
   -----------------REMOVE THIS IN FINAL SUBMISSION---------------------
   create USER admin with password 'admin';

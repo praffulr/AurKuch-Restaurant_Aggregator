@@ -33,7 +33,7 @@ li a:hover:not(.active) {
 
 <ul>
   <li><a href="/homepage">Home</a></li>
-  <li style="float:right"><a class="active" href="/">Logout</a></li>
+  <li style="float:right"><a class="active" href="/logout">Logout</a></li>
   <li style="float:right"><a href="/userpage">User Page</a></li>
 </ul>
 
@@ -51,7 +51,7 @@ li a:hover:not(.active) {
                     {% for row in rows %}
                     <tr>
                         <td scope="row">
-                            <form action="/{{row[0]}}/dishrestaurant" method="POST">
+                            <form action="/{{row[4]}}/dishrestaurant" method="POST">
                                 <input type="submit" id="{{row[0]}}" name="rest" value="{{row[0]}}"style="background:none;border:0;color:#000000"></input>
                             </form>
                         </td>
