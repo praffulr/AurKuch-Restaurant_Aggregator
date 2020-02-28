@@ -1,18 +1,9 @@
 create database project;
 \c project;
 
-CREATE or REPLACE FUNCTION calculate_age(a timestamp, b timestamp) RETURNS float AS $$
-  ( ( SELECT EXTRACT (YEAR FROM (SELECT age(a, b)) ) ));
-$$ LANGUAGE SQL;
-
-CREATE OR REPLACE FUNCTION return_query() RETURNS VOID AS
-$$
-
--- create database temp;
---   drop database temp;
-create VIEW x as select * from users;
-
-$$ language sql;
+-- CREATE or REPLACE FUNCTION calculate_age(a timestamp, b timestamp) RETURNS float AS $$
+--   ( ( SELECT EXTRACT (YEAR FROM (SELECT age(a, b)) ) ));
+-- $$ LANGUAGE SQL;
 
 create table locations(location_id int, location text, listed_in_city text, PRIMARY KEY(location, listed_in_city));
 create table cities(city text, CONSTRAINT city_uniq UNIQUE(city));
@@ -29,12 +20,8 @@ create table cart_data(username text, item_id int, count int, PRIMARY KEY(userna
   CONSTRAINT item_in_list FOREIGN KEY(item_id) REFERENCES rest_dish_links(link_id));
 
 create table active_users( first_name text, last_name text, email_id text, gender text,location text, password text,
-<<<<<<< HEAD
   username text, ph_no text, dob timestamp, reg_time timestamp, login_time timestamp, PRIMARY KEY (username),
   CONSTRAINT active_user_in_user FOREIGN KEY (username) REFERENCES users(username) ) ;
-=======
-  username text, ph_no text, dob timestamp, reg_time timestamp, login_time timestamp, PRIMARY KEY (username) ) ;
->>>>>>> 1c956c2769984508597cac1b08d84165cf3eac29
 create table orders (order_time timestamp, username text, item_id integer, count integer, PRIMARY KEY(username, order_time));
   -----------------REMOVE THIS IN FINAL SUBMISSION---------------------
   create USER admin with password 'admin';
@@ -42,56 +29,15 @@ create table orders (order_time timestamp, username text, item_id integer, count
   ---------------------------------------------------------------------
 
 
---
--- CREATE FUNCTION loc_in_locs() RETURNS TRIGGER AS $$
--- BEGIN
---   IF (SELECT cond_loc_in_locs(NEW.location, locations.listed_in_city)) THEN
---     INSERT INTO users(first_name, last_name, email_id, gender,
---       location, password, username, ph_no, dob, reg_time)
---       VALUES (new.first_name, new.last_name, new.email_id, new.gender, new.location, new.password
---         , new.username, new.ph_no, new.dob, current_timestamp);
---   END IF;
---   RETURN NEW;
--- END;
--- $$ LANGUAGE plpgsql;
---
--- CREATE TRIGGER loc_in_locations
---   BEFORE INSERT ON users
---   FOR EACH ROW
---   --WHEN (users.location IN locations.listed_in_city)
---   EXECUTE PROCEDURE loc_in_locs();
-
-
-
--- CREATE FUNCTION insert_entry() RETURNS TRIGGER AS
--- $$
---   BEGIN
---     IF (calculate_age(NEW.reg_time, NEW.dob) < 18) THEN
---       DELETE VALUES(NEW) FROM users;
---       RAISE EXCEPTION 'User is not an adult';
---     END IF;
---     RETURN NULL;
---   END;
--- $$ LANGUAGE plpgsql;
---
--- CREATE TRIGGER user_age
---   AFTER INSERT ON users
---   FOR EACH ROW
---   --WHEN (calculate_age(NEW.reg_time, NEW.dob) >= 18)
---   EXECUTE PROCEDURE insert_entry();
-
--- CREATE RULE user_age
-
-copy locations from '/home/lalithsrinivas/DBMS/Project/location.csv' with (FORMAT csv, HEADER);
+copy locations from '/home/prafful/sem6/DBMS/Project/database/location.csv' with (FORMAT csv, HEADER);
 --Inserting from locations into cities
 INSERT INTO cities(city) ( SELECT distinct(listed_in_city) FROM locations );
-copy dishes from '/home/lalithsrinivas/DBMS/Project/dishes.csv' with (FORMAT csv, HEADER);
-copy restaurants from '/home/lalithsrinivas/DBMS/Project/restaurant.csv' with (FORMAT csv, HEADER, DELIMITER ',');
-copy rest_dish_links from '/home/lalithsrinivas/DBMS/Project/restaurant_dish_links.csv' with (FORMAT csv, HEADER);
-copy rest_cuisine_links from '/home/lalithsrinivas/DBMS/Project/restaurant_cuisine_links.csv' with (FORMAT csv, HEADER);
-copy cuisines from '/home/lalithsrinivas/DBMS/Project/cuisines.csv' with (FORMAT csv, HEADER);
-copy users from '/home/lalithsrinivas/DBMS/Project/userdata.csv' with (FORMAT csv, HEADER);
-
+copy dishes from '/home/prafful/sem6/DBMS/Project/database/dishes.csv' with (FORMAT csv, HEADER);
+copy restaurants from '/home/prafful/sem6/DBMS/Project/database/restaurant.csv' with (FORMAT csv, HEADER, DELIMITER ',');
+copy rest_dish_links from '/home/prafful/sem6/DBMS/Project/database/restaurant_dish_links.csv' with (FORMAT csv, HEADER);
+copy rest_cuisine_links from '/home/prafful/sem6/DBMS/Project/database/restaurant_cuisine_links.csv' with (FORMAT csv, HEADER);
+copy cuisines from '/home/prafful/sem6/DBMS/Project/database/cuisines.csv' with (FORMAT csv, HEADER);
+copy users from '/home/prafful/sem6/DBMS/Project/database/userdata.csv' with (FORMAT csv, HEADER);
 
 
 
@@ -111,7 +57,7 @@ $$
 $$ language SQL;
 
 --helper for finding rest_dish_link_id
-CREATE OR REPLACE FUNCTION link_id(rest_id_1 integer, dish text) RETURNS INTEGER AS
+CREATE OR REPLACE FUNCTION link_id(rest_id_1 integer, dish_1 text) RETURNS INTEGER AS
 $$
   BEGIN
     RETURN
@@ -121,11 +67,11 @@ $$
       (
         Select dish_id as id
         FROM dishes
-        where dishes.dish_liked = dish
+        where dishes.dish_liked = dish_1
       )
       select rest_dish_links.link_id
       FROM rest_dish_links INNER JOIN temp_1 ON temp_1.id = rest_dish_links.dish_id
-      WHERE rest_id_1 = rest_dish_links.rest_id
+      where rest_dish_links.rest_id = rest_id_1
     );
   END;
 $$ language plpgsql;
@@ -138,7 +84,6 @@ $$
     UPDATE users
     SET location = NEW.location
     where location = OLD.location;
->>>>>>> 1c956c2769984508597cac1b08d84165cf3eac29
     RETURN NULL;
   END;
 $$ language plpgsql;
