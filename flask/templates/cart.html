@@ -47,7 +47,7 @@
             </tr>
          {% endfor %}
       </table>
-         <form action="/{{restname}}/order" method="POST">
+         <form action="/{{restid}}/order" method="POST">
             {% for key, value in result.items() %}
             <p><input type="hidden" id="{{key}}" name="{{key}}" value="{{value}}"></input></p>
             {% endfor %}

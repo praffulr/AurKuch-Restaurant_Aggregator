@@ -41,40 +41,65 @@
       <li style="float:right"><a class="active" href="/logout">Logout</a></li>
       <li style="float:right"><a href="/userpage">User Page</a></li>
     </ul>
+    <form action="/search" method="POST">
+    <label for = "search">Search:</label>
+    <input type="text" name="search">
+    <select id="searchby" name="searchby">
+    <option value="2">Search By</option>
+    <option value="1">Restaurant</option>
+    <option value="2">Dish</option>
+    <option value="3">Cuisine</option>
+    <option value="4">Location</option>
+  </select>
+   <select id="orderby" name="orderby">
+    <option value="true">Order By</option>
+    <option value="true">Descending</option>
+    <option value="false">Ascending</option>
+  </select>
+  <select id="filter" name="filter">
+    <option value="rate_5">Filter</option>
+    <option value="rate_5">Ratings</option>
+    <option value="votes">Votes</option>
+  </select>
+      </form>
+    <!--<form action="/locations" method="POST">
+        <label for = "Loc_Id">Location  :</label>
+        <input type="text" name="loc_Id" id="loc_id">
+        <input type="submit" value="Search">-->
+    <!-- <a href="/locations"><button>Start</button></a> -->
+    <!--</form>
+
+    <form action="/restaurants" method="POST">
+      <label for="restaurant">Restaurant:</label>
+        <input type="text" name="restaurant" id="restaurant">
+        <input type="submit" value = "Search">-->
+    <!-- <a href="/restaurants"><button>Start</button></a> -->
+    <!--</form>-->
     <div class="container">
     <table class="mt-5 table table-bordered">
         <thead>
             <tr>
-                <th scope="col">id</th>
-                <th scope="col">name</th>
-                <th scope="col">userID</th>
-                <th scope="col">date</th>
+               <th scope="col">Name</th>
+                <th scope="col">Restaurant Type</th>
+                <th scope="col">Address</th>
+                <th scope="col">Phone Number</th>
+                 <th scope="col">Ratings</th>
             </tr>
         </thead>
         <tbody>
             {% for row in rows %}
             <tr>
-                <td scope="row">{{row[0]}}</td>
-                <td scope="row">{{row[1]}}</td>
+                <td scope="row"><form action="/{{row[0]}}/dishrestaurant" method="POST">
+                                <input type="submit" id="{{row[1]}}" name="rest" value="{{row[1]}}"style="background:none;border:0;color:#000000"></input>
+                            </form></td>
                 <td scope="row">{{row[2]}}</td>
                 <td scope="row">{{row[3]}}</td>
+                <td scope="row">{{row[4]}}</td>
+                <td scope="row">{{row[5]}}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    <form action="/locations" method="POST">
-        <label for = "Loc_Id">Location  :</label>
-        <input type="text" name="loc_Id" id="loc_id">
-        <input type="submit" value="Search">
-    <!-- <a href="/locations"><button>Start</button></a> -->
-    </form>
-
-    <form action="/restaurants" method="POST">
-      <label for="restaurant">Restaurant:</label>
-        <input type="text" name="restaurant" id="restaurant">
-        <input type="submit" value = "Search">
-    <!-- <a href="/restaurants"><button>Start</button></a> -->
-    </form>
 
     </div>
 </body>

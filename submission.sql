@@ -1,10 +1,7 @@
 create database group_30;
 \c group_30;
 
------------------REMOVE THIS IN FINAL SUBMISSION---------------------
-create USER group_30 with password '776-302-579';
-  GRANT ALL PRIVILEGES ON DATABASE group_30 TO group_30;
----------------------------------------------------------------------
+
 
 create table locations(location_id int, location text, listed_in_city text, PRIMARY KEY(location, listed_in_city));
 create table cities(city text, CONSTRAINT city_uniq UNIQUE(city));
@@ -30,17 +27,17 @@ create table order_ids (id SERIAL, order_time timestamp, username text, rest_id 
   -- , CONSTRAINT in_orders FOREIGN KEY(order_time, username) REFERENCES orders(order_time, username)
  );
 
-  copy locations from '/home/prafful/sem6/DBMS/Project/database/location.csv' with (FORMAT csv, HEADER);
+  \copy locations from '/home/lalithsrinivas/DBMS/Project/location.csv' with (FORMAT csv, HEADER);
   --Inserting from locations into cities
   INSERT INTO cities(city) ( SELECT distinct(listed_in_city) FROM locations );
-  copy dishes from '/home/prafful/sem6/DBMS/Project/database/dishes.csv' with (FORMAT csv, HEADER);
-  copy restaurants from '/home/prafful/sem6/DBMS/Project/database/restaurant.csv' with (FORMAT csv, HEADER, DELIMITER ',');
-  copy rest_dish_links from '/home/prafful/sem6/DBMS/Project/database/restaurant_dish_links.csv' with (FORMAT csv, HEADER);
-  copy rest_cuisine_links from '/home/prafful/sem6/DBMS/Project/database/restaurant_cuisine_links.csv' with (FORMAT csv, HEADER);
-  copy cuisines from '/home/prafful/sem6/DBMS/Project/database/cuisines.csv' with (FORMAT csv, HEADER);
-  copy users from '/home/prafful/sem6/DBMS/Project/database/userdata.csv' with (FORMAT csv, HEADER);
+  \copy dishes from '/home/lalithsrinivas/DBMS/Project/dishes.csv' with (FORMAT csv, HEADER);
+  \copy restaurants from '/home/lalithsrinivas/DBMS/Project/restaurant.csv' with (FORMAT csv, HEADER, DELIMITER ',');
+  \copy rest_dish_links from '/home/lalithsrinivas/DBMS/Project/restaurant_dish_links.csv' with (FORMAT csv, HEADER);
+  \copy rest_cuisine_links from '/home/lalithsrinivas/DBMS/Project/restaurant_cuisine_links.csv' with (FORMAT csv, HEADER);
+  \copy cuisines from '/home/lalithsrinivas/DBMS/Project/cuisines.csv' with (FORMAT csv, HEADER);
+  \copy users from '/home/lalithsrinivas/DBMS/Project/userdata.csv' with (FORMAT csv, HEADER);
 
-  copy orders from '/home/prafful/sem6/DBMS/Project/database/ordersdata.csv' with (FORMAT csv, HEADER);
+  \copy orders from '/home/lalithsrinivas/DBMS/Project/ordersdata.csv' with (FORMAT csv, HEADER);
 
 
 
@@ -368,3 +365,8 @@ create table order_ids (id SERIAL, order_time timestamp, username text, rest_id 
       GROUP BY orders.order_time, orders.username, item_rest.rest_id
     )
     ;
+
+    -----------------REMOVE THIS IN FINAL SUBMISSION---------------------
+    -- create USER group_30 with password '776-302-579';
+      GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA PUBLIC TO group_30;
+    ---------------------------------------------------------------------

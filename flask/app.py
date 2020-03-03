@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, request, session
+from flask import Flask, render_template, redirect, request, session, url_for
 # from flask.session import Session
 import psycopg2
 import datetime as dt
@@ -6,7 +6,7 @@ import datetime as dt
 # reload(sys)
 # sys.setdefaultencoding('UTF8')
 # Connect to the database
-db = 'host=127.0.0.1  dbname=project user=admin password=admin'
+db = 'host=127.0.0.1  dbname=group_30 user=group_30 password=776-302-579'
 conn = psycopg2.connect(db)
 cur = conn.cursor()
 
@@ -67,7 +67,7 @@ def home():
                     from locations, active_users
                       where locations.listed_in_city = active_users.location AND active_users.username = \'{}\'
                 )
-                SELECT name
+                SELECT restaurant_id,Name,rest_type,address,phone,rate_5
                 from restaurants INNER JOIN locs
                   on restaurants.location = locs.location
                 ORDER BY restaurants.rate_5 desc
@@ -88,10 +88,10 @@ def home():
                     from locations, active_users
                       where locations.listed_in_city = active_users.location AND active_users.username = \'{}\'
                 )
-                SELECT name
+                SELECT restaurant_id,Name,rest_type,address,phone,rate_5
                 from restaurants INNER JOIN locs
                   on restaurants.location = locs.location
-                ORDER BY restaurants.votes desc
+                ORDER BY restaurants.rate_5 desc
                 LIMIT 25;
             """.format(session['username'])
             )
@@ -110,7 +110,7 @@ def register():
             lastame = request.form['lastname']
             emailid = request.form['emailid']
             gender = request.form['gender']
-            location = request.form['location'].lower()
+            location = request.form['location']
             password = request.form['password']
             username = request.form['username']
             phonenum = request.form['phonenum']
@@ -126,10 +126,24 @@ def register():
                 )
             conn.commit()
             return render_template('users.html')
-        except:
-            return render_template('register.html', message="Username might be taken (or) Invalid Credentials entered")
+        except Exception as e:
+            print(e)
+            conn.commit()
+            cur.execute(
+            """
+                SELECT * from cities;
+            """
+            )
+            result = cur.fetchall()
+            return render_template('register.html', message="Unable to register. Please try again!", locations=result)
     else:
-        return render_template('register.html', message="", )
+        cur.execute(
+            """
+                SELECT * from cities;
+            """
+            )
+        result = cur.fetchall()
+        return render_template('register.html', message="", locations=result)
 
 @app.route("/userpage")
 def userpage():
@@ -140,6 +154,12 @@ def userpage():
         """.format(session['username'])
         )
     rows = cur.fetchall()
+    cur.execute(
+            """
+                SELECT * from cities;
+            """
+            )
+    locations = cur.fetchall()
     rows = list(rows)
     rows[0] = list(rows[0])
     rows[0][-1] = rows[0][-1].strftime("%d-%m-%Y")
@@ -147,7 +167,7 @@ def userpage():
     rows = tuple(rows)
     cur.execute(
         """
-            SELECT restaurants.name, dishes.dish_liked, price, cart_data.count, price*cart_data.count
+            SELECT restaurants.name, dishes.dish_liked, price, cart_data.count, price*cart_data.count, restaurants.restaurant_id
             FROM cart_data, restaurants, dishes, rest_dish_links
             WHERE rest_dish_links.link_id = cart_data.item_id
                 AND cart_data.username = \'{}\'
@@ -158,7 +178,7 @@ def userpage():
     cart = cur.fetchall()
     cur.execute(
         """
-            SELECT restaurants.name, dishes.dish_liked, price, orders.count, price*orders.count, orders.order_time
+            SELECT restaurants.name, dishes.dish_liked, price, orders.count, price*orders.count, orders.order_time, restaurants.restaurant_id
             FROM orders, restaurants, dishes, rest_dish_links
             WHERE rest_dish_links.link_id = orders.item_id
                 AND orders.username = \'{}\'
@@ -167,7 +187,7 @@ def userpage():
         """.format(session['username'])
         )
     orders = cur.fetchall()
-    return render_template("userPage.html", message=rows, cart=cart, orders=orders)
+    return render_template("userPage.html", message=rows, cart=cart, orders=orders, locations=locations)
 
 
 @app.route("/locations", methods=['GET', 'POST'])
@@ -186,20 +206,20 @@ def locations():
         # return format(loc)
         return render_template("locationsearch.html", rows=rows)
 
-@app.route("/restaurants", methods=['GET', 'POST'])
-def rests():
-    if request.method == 'POST':
-        rest = request.form.get('restaurant').lower()
-        cur.execute(
-        """
-            SELECT *  FROM restaurants
-            where restaurants.name =\'{}\'
-            LIMIT 25
-        """.format(rest)
-        )
-        rows = cur.fetchall()
-        # return format(loc)
-        return render_template("base.html", rows=rows)
+# @app.route("/restaurants", methods=['GET', 'POST'])
+# def rests():
+#     if request.method == 'POST':
+#         rest = request.form.get('restaurant').lower()
+#         cur.execute(
+#         """
+#             SELECT *  FROM restaurants
+#             where restaurants.name =\'{}\'
+#             LIMIT 25
+#         """.format(rest)
+#         )
+#         rows = cur.fetchall()
+#         # return format(loc)
+#         return render_template("base.html", rows=rows)
 
 @app.route("/<restaurant_id>/dishrestaurant",methods=['GET', 'POST'])
 def dishrestaurant(restaurant_id):
@@ -209,17 +229,27 @@ def dishrestaurant(restaurant_id):
         """
             with temp_1 As
             (
-                SELECT rest_dish_links.dish_id as id
+                SELECT rest_dish_links.dish_id as id, rest_dish_links.price as price
                 FROM restaurants INNER JOIN rest_dish_links ON restaurants.restaurant_id = rest_dish_links.rest_id
                 where restaurants.restaurant_id = \'{}\'
             )
-            select dish_liked
+            select dish_liked, price
             from temp_1 INNER JOIN dishes ON dishes.dish_id = temp_1.id
         """.format(restaurant_id)
            )
         rows = cur.fetchall()
     return render_template("dishrestaurant.html",rows=rows, rest_name=restaurant_id)
 
+@app.route("/updatelocation", methods=['POST'])
+def loc_update():
+    if request.method == 'POST':
+        loc = request.form['location']
+        cur.execute(
+            """
+                select update_user_loc(\'{}\', \'{}\');
+            """.format(session['username'], loc)
+            )
+        return redirect(url_for('userpage'))
 @app.route("/<rest_id>/cart",methods=['GET','POST'])
 def cart(rest_id):
     if request.method == 'POST':
@@ -240,7 +270,7 @@ def cart(rest_id):
     			""".format(session['username'], rest_id, i.lower(), temp[i])
                 )
             conn.commit()
-        return render_template("cart.html",result = temp)
+        return render_template("cart.html",result = temp, restid=rest_id)
 
 @app.route("/<name>/order",methods=['GET','POST'])
 def order(name):
@@ -250,20 +280,65 @@ def order(name):
         for i in res.keys():
             if res[i] != "order":
                 temp[i] = res[i]
-            cur.execute(
+                cur.execute(
     			"""
-                   INSERT INTO orders(order_time, username, item_id, count)
-                   SELECT active_users.username, rest_dish_links.link_id as item_id, \'{}\' as count
-                   FROM active_users, rest_dish_links, restaurants, dishes
-                   WHERE active_users.username = \'{}\'
-                       AND rest_dish_links.rest_id = \'{}\'
-                       AND rest_dish_links.dish_id = dishes.dish_id
-                       AND dishes.dish_liked = \'{}\';
-    			""".format(temp[i].lower(), session['username'], name.lower(), i.lower())
+                
+                   select ordering(\'{}\', link_id(\'{}\', \'{}\'), {});
+    			""".format(session['username'], name, i.lower(), temp[i])
                 )
             # print(temp[i].lower(), session['username'], rest_name.lower(), i.lower())
-            conn.commit()
-        return render_template("order.html", result=temp)
+                conn.commit()
+        return redirect(url_for('home'))
+    
+@app.route("/removeitem/<rest_id>/<dish_name>")
+def removeitem(rest_id, dish_name):
+        cur.execute(
+            """
+                select update_cart(\'{}\', link_id(\'{}\', \'{}\'), 0);
+            """.format( session['username'], rest_id, dish_name)
+            )
+        conn.commit()
+        return redirect(url_for('userpage'))
+
+@app.route("/search",methods=['GET','POST'])
+def search():
+    if request.method == 'POST':
+        text = request.form.get('search').lower()
+        mode = request.form.get('searchby').lower()
+        order = request.form.get('orderby').lower()
+        fil = request.form.get('filter').lower()
+        lim=1000
+        if order=='true':
+            cur.execute(
+				"""
+                    select restaurant_id,s.Name,s.rest_type,s.address, s.phone_number,s.rating_5 from search_rests({},\'{}\',\'{}\',{},{}) as s inner join restaurants on restaurants.name=s.Name and restaurants.address=s.address order by {} DESC
+				""".format(mode,text,fil,order,lim, fil)
+				)
+        else :
+            cur.execute(
+				"""
+				select restaurant_id,s.Name,s.rest_type,s.address, s.phone_number,s.rating_5 from search_rests({},\'{}\',\'{}\',{},{}) as s inner join restaurants on restaurants.name=s.Name and restaurants.address=s.address order by {}
+                """.format(mode,text,fil,order,lim, fil) 
+				)
+        rows=cur.fetchall()
+        #y=[x[0] for x in rows]
+        #y=[]
+        #for x in rows:
+        #	y.append(list(x))
+#        rows = list(rows)
+#        for i in range(len(rows)):
+#    		rows[i]=list(rows[i])
+
+#    	for i in range(len(rows)):
+    		#rows[i]=list(rows[i])
+#    		for j in range(len(rows[i])):
+#    			rows[i][j]=str(rows[i][j])
+    		#rows[i]=tuple(rows[i])
+
+#    	for i in range(len(rows)):
+#    		rows[i]=tuple(rows[i])
+#    	rows = tuple(rows)
+    return render_template("search.html",messages=rows)
 
 # @app.route("/restaurants", methods=['GET', 'POST'])
 # def restaurantSearch():

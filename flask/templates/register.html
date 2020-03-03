@@ -10,7 +10,7 @@
     <input type="text" name="lastname" id="lastname">
     <br><br>
   <label for="emailid">Email-Id: </label>
-    <input type="text" name="emailid" id="emailid">
+    <input type="email" name="emailid" id="emailid">
     <br><br>
   <label for="gender">Gender: </label>
     <select id="gender" name="gender">
@@ -21,7 +21,12 @@
 	</select>
     <br><br>
   <label for="location">Location: </label>
-    <input type="text" name="location" id="location">
+		<select id="location" name="location">
+			{% for row in locations %}
+			<option scope="location", value="{{row[0]}}">{{row[0]}}
+			</option>
+			{% endfor %}
+		</select>
     <br><br>
   <label for="phonenum">Phone Number: </label>
     <input type="text" name="phonenum" id="phonenum">

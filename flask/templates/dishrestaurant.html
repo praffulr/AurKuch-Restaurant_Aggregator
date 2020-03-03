@@ -31,16 +31,16 @@ li a:hover:not(.active) {
 </head>
 <body>
 
-<ul>
-  <li><a href="/homepage">Home</a></li>
-  <li style="float:right"><a class="active" href="/logout">Logout</a></li>
-  <li style="float:right"><a href="/userpage">User Page</a></li>
-</ul>
+  <ul>
+    <li><a href="/homepage">Home</a></li>
+    <li style="float:right"><a class="active" href="/logout">Logout</a></li>
+    <li style="float:right"><a href="/userpage">User Page</a></li>
+  </ul>
 <div class="container">
             <!--<table class="mt-5 table table-bordered">-->
                 <form action="/{{rest_name}}/cart" method="POST">
                 {% for row in rows %}
-                    <p>{{row[0]}}
+                    <p>{{row[0]}} &#x20b9;{{row[1]}}
                      <input type="number" id="{{row[0]}}" name="{{row[0]}}" step="1" min="0" value="0"></p>
                 {% endfor %}
                 <input type="submit" value = "submit">

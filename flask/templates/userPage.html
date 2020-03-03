@@ -51,7 +51,18 @@ li a:hover:not(.active) {
 		<br>
 		<label for="gender"><b>Gender:</b> {{message[0][4]}}</label>
 		<br>
-		<label for="location"><b>Location:</b> {{message[0][5]}}</label>
+    <form action="/updatelocation" method="POST">
+		<label for="location"><b>Location:</b>
+      <select id="location" name="location">
+      <option scope="location", value="{{message[0][5]}}">{{message[0][5]}}
+			</option>
+			{% for row in locations %}
+			<option scope="location", value="{{row[0]}}">{{row[0]}}
+			</option>
+			{% endfor %}
+		</select>
+    <input type="submit" id="updateLocation" name="updateLocation" value="update"style="background:none;border:0;color:#000000"></input>
+                </form></label>
 		<br>
 		<label for="phonenum"><b>Phone Number:</b> {{message[0][6]}}</label>
 		<br>
@@ -68,23 +79,26 @@ li a:hover:not(.active) {
                 <th scope="col">price</th>
                 <th scope="col">quantity</th>
                 <th scope="col">total</th>
+                <th scope="col"></th>
             </tr>
         </thead>
         <tbody>
             {% for row in cart %}
             <tr>
-                <td scope="row">{{row[0]}}</td>
+              <td scope="row"><form action="/{{row[5]}}/dishrestaurant" method="POST">
+                              <input type="submit" id="{{row[5]}}" name="rest" value="{{row[0]}}"style="background:none;border:0;color:#000000"></input>
+                          </form></td>
                 <td scope="row">{{row[1]}}</td>
                 <td scope="row">{{row[2]}}</td>
                 <td scope="row">{{row[3]}}</td>
                 <td scope="row">{{row[4]}}</td>
+                <td scope="row"><a href="/removeitem/{{row[5]}}/{{row[1]}}" method="POST">&#x274C;</a>
+                                <a href="/{{row[5]}}/order" method="POST">&#x2705;</a></td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
     <br>
-    <input type="submit" value="Order Items">
-    <input type="submit" value="Clear Cart">
     <hr>
     <br>
     <h3>Orders</h3>
@@ -103,7 +117,9 @@ li a:hover:not(.active) {
             {% for row in orders %}
             <tr>
                 <td scope="row">{{row[5]}}</td>
-                <td scope="row">{{row[0]}}</td>
+                <td scope="row"><form action="/{{row[6]}}/dishrestaurant" method="POST">
+                                <input type="submit" id="{{row[6]}}" name="rest" value="{{row[0]}}"style="background:none;border:0;color:#000000"></input>
+                            </form></td>
                 <td scope="row">{{row[1]}}</td>
                 <td scope="row">{{row[2]}}</td>
                 <td scope="row">{{row[3]}}</td>

@@ -1,5 +1,6 @@
 <head>
 <style>
+
 ul {
   list-style-type: none;
   margin: 0;
@@ -31,11 +32,32 @@ li a:hover:not(.active) {
 </head>
 <body>
 
-<ul>
-  <li><a href="/homepage">Home</a></li>
-  <li style="float:right"><a class="active" href="/logout">Logout</a></li>
-  <li style="float:right"><a href="/userpage">User Page</a></li>
-</ul>
+  <ul>
+    <li><a href="/homepage">Home</a></li>
+    <li style="float:right"><a class="active" href="/logout">Logout</a></li>
+    <li style="float:right"><a href="/userpage">User Page</a></li>
+  </ul>
+  <form action="/search" method="POST">
+  <label for = "search">Search:</label>
+  <input type="text" name="search">
+  <select id="searchby" name="searchby">
+  <option value="2">Search By</option>
+  <option value="1">Restaurant</option>
+  <option value="2">Dish</option>
+  <option value="3">Cuisine</option>
+  <option value="4">Location</option>
+  </select>
+  <select id="orderby" name="orderby">
+  <option value="true">Order By</option>
+  <option value="true">Descending</option>
+  <option value="false">Ascending</option>
+  </select>
+  <select id="filter" name="filter">
+  <option value="rate_5">Filter</option>
+  <option value="rate_5">Ratings</option>
+  <option value="votes">Votes</option>
+  </select>
+    </form>
 
 <div class="container">
             <table class="mt-5 table table-bordered">
