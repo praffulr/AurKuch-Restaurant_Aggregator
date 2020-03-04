@@ -92,8 +92,30 @@ li a:hover:not(.active) {
                 <td scope="row">{{row[2]}}</td>
                 <td scope="row">{{row[3]}}</td>
                 <td scope="row">{{row[4]}}</td>
-                <td scope="row"><a href="/removeitem/{{row[5]}}/{{row[1]}}" method="POST">&#x274C;</a>
-                                <a href="/{{row[5]}}/order" method="POST">&#x2705;</a></td>
+                <td scope="row"><a href="/removeitem/{{row[5]}}/{{row[1]}}" method="POST">&#x274C;</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br>
+    <hr>
+    <br>
+    <h3>Pending Orders</h3>
+    <table class="mt-5 table table-bordered">
+        <thead>
+            <tr>
+                <th scope="col">restaurant name</th>
+                <th scope="col">Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in todo %}
+            <tr>
+              <form action="/{{row[1]}}/dishrestaurant" method="POST">
+              <td scope="row">
+                              <input type="submit" id="{{row[1]}}" name="rest" value="{{row[0]}}"style="background:none;border:0;color:#000000"></input></td>
+                                <td scope="row"> {{row[2]}} </td>
+                                <td scope="row">  <a href="/{{row[1]}}/order" method="POST">&#x2705;</a></td> </form>
             </tr>
             {% endfor %}
         </tbody>

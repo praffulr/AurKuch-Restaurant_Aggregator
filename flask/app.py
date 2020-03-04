@@ -183,11 +183,34 @@ def userpage():
             WHERE rest_dish_links.link_id = orders.item_id
                 AND orders.username = \'{}\'
                 AND rest_dish_links.rest_id = restaurants.restaurant_id
-                AND rest_dish_links.dish_id = dishes.dish_id;
+                AND rest_dish_links.dish_id = dishes.dish_id
+            ORDER BY orders.order_time desc;
         """.format(session['username'])
         )
     orders = cur.fetchall()
-    return render_template("userPage.html", message=rows, cart=cart, orders=orders, locations=locations)
+    temp = []
+    for i in orders:
+        temp.append(list(i))
+    for i in range(len(temp)):
+       temp[i][-2] = temp[i][-2].strftime("%H:%M %d-%m-%Y")
+       temp[i] = tuple(temp[i])
+    orders = tuple(temp)
+    
+    cur.execute(
+        """SELECT distinct(restaurants.name), restaurants.restaurant_id, sum(price*count)
+            FROM cart_data, restaurants, dishes, rest_dish_links
+            WHERE rest_dish_links.link_id = cart_data.item_id
+                AND cart_data.username = \'{}\'
+                AND rest_dish_links.rest_id = restaurants.restaurant_id
+                AND rest_dish_links.dish_id = dishes.dish_id
+            group by restaurants.name, restaurants.restaurant_id;
+        """.format(session['username'])
+        )
+    todo=cur.fetchall()
+        
+    #return redirect(url_for('userpage'))
+    return render_template("userPage.html", message=rows, cart=cart, orders=orders, locations=locations,todo=todo)
+    # return render_template("userPage.html", message=rows, cart=cart, orders=orders, locations=locations)
 
 
 @app.route("/locations", methods=['GET', 'POST'])
@@ -289,6 +312,22 @@ def order(name):
             # print(temp[i].lower(), session['username'], rest_name.lower(), i.lower())
                 conn.commit()
         return redirect(url_for('home'))
+    else:
+        cur.execute("""
+            select item_id,count 
+            from cart_data, rest_dish_links
+            where cart_data.item_id=rest_dish_links.link_id and rest_dish_links.rest_id={}
+            """.format(name)
+            )
+        temp=cur.fetchall()
+        for i in temp:
+            cur.execute(
+                """
+                select ordering(\'{}\',{},{});
+                """.format(session['username'],i[0],i[1])
+                )
+            conn.commit()
+        return redirect(url_for('userpage'))
     
 @app.route("/removeitem/<rest_id>/<dish_name>")
 def removeitem(rest_id, dish_name):
@@ -309,17 +348,31 @@ def search():
         fil = request.form.get('filter').lower()
         lim=1000
         if order=='true':
-            cur.execute(
+            if mode == '1':
+                cur.execute(
 				"""
-                    select restaurant_id,s.Name,s.rest_type,s.address, s.phone_number,s.rating_5 from search_rests({},\'{}\',\'{}\',{},{}) as s inner join restaurants on restaurants.name=s.Name and restaurants.address=s.address order by {} DESC
-				""".format(mode,text,fil,order,lim, fil)
+                    select restaurant_id,Name,rest_type,address, phone,rate_5 from restaurants where  name=\'{}\' order by {} DESC limit {}
+				""".format(text,fil,lim)
 				)
+            else:
+                cur.execute(
+    				"""
+                        select restaurant_id,s.Name,s.rest_type,s.address, s.phone_number,s.rating_5 from search_rests({},\'{}\',\'{}\',{},{}) as s inner join restaurants on restaurants.name=s.Name and restaurants.address=s.address order by {} DESC
+    				""".format(mode,text,fil,order,lim, fil)
+    				)
         else :
-            cur.execute(
+            if mode == '1':
+                cur.execute(
 				"""
-				select restaurant_id,s.Name,s.rest_type,s.address, s.phone_number,s.rating_5 from search_rests({},\'{}\',\'{}\',{},{}) as s inner join restaurants on restaurants.name=s.Name and restaurants.address=s.address order by {}
-                """.format(mode,text,fil,order,lim, fil) 
+                    select restaurant_id,Name,rest_type,address, phone,rate_5 from restaurants where  name=\'{}\' order by {} limit {}
+				""".format(text,fil,lim)
 				)
+            else:
+                cur.execute(
+    				"""
+    				select restaurant_id,s.Name,s.rest_type,s.address, s.phone_number,s.rating_5 from search_rests({},\'{}\',\'{}\',{},{}) as s inner join restaurants on restaurants.name=s.Name and restaurants.address=s.address order by {}
+                    """.format(mode,text,fil,order,lim, fil) 
+    				)
         rows=cur.fetchall()
         #y=[x[0] for x in rows]
         #y=[]
@@ -358,4 +411,4 @@ def search():
 #
 #         return render_template("base.html", rows=rows)
 if __name__ == "__main__":
-    app.run(host="localhost", port=5001, debug=True)
+    app.run(host="localhost", port=5002, debug=True)
